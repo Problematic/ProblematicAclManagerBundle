@@ -147,6 +147,16 @@ class AclManager {
     
     /**
      * @param integer $mask
+     * @return AclManager 
+     */
+    public function setClassPermission($mask) {
+        $this->doSetClassPermission($mask, $this->acl, $this->securityIdentity);
+        
+        return $this;
+    }
+    
+    /**
+     * @param integer $mask
      * @param Acl $acl
      * @param SecurityIdentityInterface $securityIdentity
      * @param boolean $granting
@@ -196,11 +206,12 @@ class AclManager {
         $preppedType = ucfirst($type);
         
         $aceCollection = call_user_func(array($acl, "get{$preppedType}Aces"));
-        
         $aceFound = false;
-        foreach ($aceCollection as $index=>$ace) {
-            if (($ace->getSecurityIdentity() === $settings['securityIdentity']) && ($ace->getMask() === $settings['mask'])) {
-                if ($ace->isGranting() === $settings['granting']) {
+        
+        //we iterate backwards because removing an ACE reorders everything after it, which will cause unexpected results when iterating forward
+        for ($i=count($aceCollection)-1; $i>=0; $i--) {
+            if (($aceCollection[$i]->getSecurityIdentity() === $settings['securityIdentity']) && ($aceCollection[$i]->getMask() === $settings['mask'])) {
+                if ($aceCollection[$i]->isGranting() === $settings['granting']) {
                     call_user_func(array($acl, "update{$preppedType}Ace"), 
                             $settings['index'], $settings['mask']);
                 } else {
@@ -217,16 +228,6 @@ class AclManager {
             call_user_func(array($acl, "insert{$preppedType}Ace"),
                     $settings['securityIdentity'], $settings['mask'], $settings['index'], $settings['granting']);
         }
-    }
-    
-    /**
-     * @param integer $mask
-     * @return AclManager 
-     */
-    public function setClassPermission($mask) {
-        $this->doSetClassPermission($mask, $this->acl, $this->securityIdentity);
-        
-        return $this;
     }
     
     /**
