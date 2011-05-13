@@ -22,6 +22,7 @@ class AclManager {
     protected $securityContext;
     protected $aclProvider;
     protected $maskBuilder;
+    protected $contextEntity;
     
     /**
      * @var Acl
@@ -32,6 +33,7 @@ class AclManager {
      * @var SecurityIdentityInterface
      */
     protected $securityIdentity;
+    protected $securityIdentityCollection = array();
     
     public function __construct(SecurityContext $securityContext, MutableAclProvider $aclProvider) {
         $this->securityContext = $securityContext;
@@ -39,12 +41,32 @@ class AclManager {
         $this->maskBuilder = new MaskBuilder();
     }
     
-    /**
-     * @param mixed $entity
-     * @return AclManager 
-     */
-    public function loadAcl($entity) {
-        $this->acl = $this->doLoadAcl($entity);
+    public function setContextEntity($entity) {
+        $this->contextEntity = $entity;
+        
+        return $this;
+    }
+    
+    public function isAclLoaded() {
+        return (null !== $this->acl && $this->acl instanceof Acl);
+    }
+    
+    public function hasSecurityIdentity() {
+        return (null !== $this->securityIdentity && $this->securityIdentity instanceof SecurityIdentityInterface);
+    }
+    
+    public function getSecurityIdentities() {
+        return $this->securityIdentityCollection;
+    }
+    public function addSecurityIdentity(SecurityIdentityInterface $securityIdentity) {
+        $this->securityIdentityCollection[] = $securityIdentity;
+    }
+    public function resetSecurityIdentities() {
+        $this->securityIdentityCollection = array();
+    }
+    
+    public function loadAcl() {
+        $this->acl = $this->doLoadAcl($this->contextEntity);
         
         return $this;
     }
@@ -53,9 +75,10 @@ class AclManager {
      * @param mixed $entity
      * @return Acl
      */
-    public function doLoadAcl($entity) {
+    protected function doLoadAcl($entity) {
         $objectIdentity = ObjectIdentity::fromDomainObject($entity);
         
+        // is this faster than finding, and creating on null?
         try {
             $acl = $this->aclProvider->createAcl($objectIdentity);
         } catch(AclAlreadyExistsException $ex) {
@@ -65,12 +88,8 @@ class AclManager {
         return $acl;
     }
     
-    /**
-     * @param mixed $identity
-     * @return AclManager 
-     */
     public function createSecurityIdentity($identity) {
-        $this->securityIdentity = $this->doCreateSecurityIdentity($identity);
+        $this->addSecurityIdentity($this->doCreateSecurityIdentity($identity));
 
         return $this;
     }
@@ -107,8 +126,8 @@ class AclManager {
     /**
      * @param mixed $entity 
      */
-    public function installDefaultAccess($entity) {
-        $this->doInstallDefaultAccess($entity);
+    public function installDefaultAccess() {
+        $this->doInstallDefaultAccess($this->contextEntity);
         
         return $this;
     }
@@ -149,10 +168,6 @@ class AclManager {
         return true;
     }
     
-    /**
-     * @param integer $mask
-     * @return AclManager 
-     */
     public function setObjectPermission($mask, $granting = true) {
         $this->doSetPermission('object', $this->acl, array(
             'mask'              => $mask,
@@ -163,10 +178,6 @@ class AclManager {
         return $this;
     }
     
-    /**
-     * @param integer $mask
-     * @return AclManager 
-     */
     public function setClassPermission($mask, $granting = true) {
         $this->doSetPermission('class', $this->acl, array(
             'mask'              => $mask,
@@ -221,25 +232,8 @@ class AclManager {
         $this->aclProvider->updateAcl($acl);
     }
     
-    /**
-     * @return MaskBuilder
-     */
     public function getMaskBuilder() {
         return $this->maskBuilder->reset();
-    }
-    
-    /**
-     * @return Acl
-     */
-    public function getAcl() {
-        return $this->acl;
-    }
-    
-    /**
-     * @return SecurityIdentityInterface
-     */
-    public function getSecurityIdentity() {
-        return $this->securityIdentity;
     }
 }
 
