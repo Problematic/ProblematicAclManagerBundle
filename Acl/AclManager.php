@@ -198,25 +198,22 @@ class AclManager {
         
         $aceCollection = call_user_func(array($acl, "get{$type}Aces"));
         $aceFound = false;
+        $doInsert = false;
         
         //we iterate backwards because removing an ACE reorders everything after it, which will cause unexpected results when iterating forward
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
-            // how do we check ace equivalency?
-            if (($aceCollection[$i]->getSecurityIdentity() === $settings['securityIdentity']) && ($aceCollection[$i]->isGranting() === $settings['granting'])) {
+            if ($aceCollection[$i]->getSecurityIdentity() === $settings['securityIdentity']) {
                 if ($aceCollection[$i]->isGranting() === $settings['granting']) {
-                    call_user_func(array($acl, "update{$type}Ace"), 
-                            $i, $settings['mask']);
+                    call_user_func(array($acl, "update{$type}Ace"), $i, $settings['mask']);
                 } else {
-                    call_user_func(array($acl, "delete{$type}Ace"), 
-                            $i);
-                    call_user_func(array($acl, "insert{$type}Ace"), 
-                            $settings['securityIdentity'], $settings['mask'], $settings['index'], $settings['granting']);
+                    call_user_func(array($acl, "delete{$type}Ace"), $i);
+                    $doInsert = true;
                 }
                 $aceFound = true;
             }
         }
         
-        if (!$aceFound) {
+        if ($doInsert || !$aceFound) {
             call_user_func(array($acl, "insert{$type}Ace"),
                     $settings['securityIdentity'], $settings['mask'], $settings['index'], $settings['granting']);
         }
