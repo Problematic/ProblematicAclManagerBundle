@@ -139,8 +139,13 @@ class AclManager {
      * @param integer $mask
      * @return AclManager 
      */
-    public function setObjectPermission($mask) {
-        $this->doSetObjectPermission($mask, $this->acl, $this->securityIdentity);
+    public function setObjectPermission($mask, $granting = true, $index = 0) {
+        $this->doSetPermission('object', $this->acl, array(
+            'mask'              => $mask,
+            'securityIdentity'  => $this->securityIdentity,
+            'granting'          => $granting,
+            'index'             => $index,
+        ));
         
         return $this;
     }
@@ -149,42 +154,15 @@ class AclManager {
      * @param integer $mask
      * @return AclManager 
      */
-    public function setClassPermission($mask) {
-        $this->doSetClassPermission($mask, $this->acl, $this->securityIdentity);
+    public function setClassPermission($mask, $granting = true, $index = 0) {
+        $this->doSetPermission('class', $this->acl, array(
+            'mask'              => $mask,
+            'securityIdentity'  => $this->securityIdentity,
+            'granting'          => $granting,
+            'index'             => $index,
+        ));
         
         return $this;
-    }
-    
-    /**
-     * @param integer $mask
-     * @param Acl $acl
-     * @param SecurityIdentityInterface $securityIdentity
-     * @param boolean $granting
-     * @param integer $index 
-     */
-    protected function doSetObjectPermission($mask, Acl $acl, SecurityIdentityInterface $securityIdentity, $granting = true, $index = 0) {
-        $this->doSetPermission('object', $acl, array(
-            'mask'              => $mask,
-            'securityIdentity'  => $securityIdentity,
-            'granting'          => $granting,
-            'index'             => $index,
-        ));
-    }
-    
-    /**
-     * @param type $mask
-     * @param Acl $acl
-     * @param SecurityIdentityInterface $securityIdentity
-     * @param type $granting
-     * @param type $index 
-     */
-    protected function doSetClassPermission($mask, Acl $acl, SecurityIdentityInterface $securityIdentity, $granting = true, $index = 0) {
-        $this->doSetPermission('class', $acl, array(
-            'mask'              => $mask,
-            'securityIdentity'  => $securityIdentity,
-            'granting'          => $granting,
-            'index'             => $index,
-        ));
     }
     
     /**
