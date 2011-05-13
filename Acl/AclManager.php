@@ -115,22 +115,32 @@ class AclManager {
         $builder = $this->getMaskBuilder();
 
         $builder->add('iddqd');
-        $acl->insertClassAce(new RoleSecurityIdentity('ROLE_SUPER_ADMIN'), $builder->get());
+        $this->doSetPermission('class', $acl, array(
+            'mask'              => $builder->get(),
+            'securityIdentity'  => new RoleSecurityIdentity('ROLE_SUPER_ADMIN'),
+        ));
 
         $builder->reset();
         $builder->add('master');
-        $acl->insertClassAce(new RoleSecurityIdentity('ROLE_ADMIN'), $builder->get());
+        $this->doSetPermission('class', $acl, array(
+            'mask'              => $builder->get(),
+            'securityIdentity'  => new RoleSecurityIdentity('ROLE_ADMIN'),
+        ));
 
         $builder->reset();
         $builder->add('view');
-        $acl->insertClassAce(new RoleSecurityIdentity('IS_AUTHENTICATED_ANONYMOUSLY'), $builder->get());
+        $this->doSetPermission('class', $acl, array(
+            'mask'              => $builder->get(),
+            'securityIdentity'  => new RoleSecurityIdentity('IS_AUTHENTICATED_ANONYMOUSLY'),
+        ));
 
         $builder->reset();
         $builder->add('create');
         $builder->add('view');
-        $acl->insertClassAce(new RoleSecurityIdentity('ROLE_USER'), $builder->get());
-        
-        $this->aclProvider->updateAcl($acl);
+        $this->doSetPermission('class', $acl, array(
+            'mask'              => $builder->get(),
+            'securityIdentity'  => new RoleSecurityIdentity('ROLE_USER'),
+        ));
         
         return true;
     }
@@ -139,12 +149,11 @@ class AclManager {
      * @param integer $mask
      * @return AclManager 
      */
-    public function setObjectPermission($mask, $granting = true, $index = 0) {
+    public function setObjectPermission($mask, $granting = true) {
         $this->doSetPermission('object', $this->acl, array(
             'mask'              => $mask,
             'securityIdentity'  => $this->securityIdentity,
             'granting'          => $granting,
-            'index'             => $index,
         ));
         
         return $this;
@@ -154,12 +163,11 @@ class AclManager {
      * @param integer $mask
      * @return AclManager 
      */
-    public function setClassPermission($mask, $granting = true, $index = 0) {
+    public function setClassPermission($mask, $granting = true) {
         $this->doSetPermission('class', $this->acl, array(
             'mask'              => $mask,
             'securityIdentity'  => $this->securityIdentity,
             'granting'          => $granting,
-            'index'             => $index,
         ));
         
         return $this;
@@ -169,6 +177,8 @@ class AclManager {
      * Takes an ACE type (class/object), an ACL and an array of settings (mask, identity, granting, index)
      * Loads an ACE collection from the ACL and updates the permissions (creating if no appropriate ACE exists)
      * 
+     * @todo refactor this code to transactionalize ACL updating
+     * 
      * @param string $type
      * @param array $aceCollection
      * @param array $args 
@@ -176,7 +186,7 @@ class AclManager {
     protected function doSetPermission($type, Acl $acl, array $args) {
         $defaults = array(
             'mask'              => 0,
-            'securityIdentity'  => null,
+            'securityIdentity'  => $this->securityIdentity,
             'granting'          => true,
             'index'             => 0,
         );
@@ -205,6 +215,8 @@ class AclManager {
             call_user_func(array($acl, "insert{$type}Ace"),
                     $settings['securityIdentity'], $settings['mask'], $settings['index'], $settings['granting']);
         }
+        
+        $this->aclProvider->updateAcl($acl);
     }
     
     /**
