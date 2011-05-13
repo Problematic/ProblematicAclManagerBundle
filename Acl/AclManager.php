@@ -100,42 +100,6 @@ class AclManager {
         return $securityIdentity;
     }
     
-//    /**
-//     * @param integer $mask
-//     * @return AclManager 
-//     */
-//    public function grantPermission($mask) {
-//        $this->doSetPermission($mask, $this->acl, $this->securityIdentity);
-//        
-//        return $this;
-//    }
-    
-//    /**
-//     * @param integer $mask
-//     * @return AclManager 
-//     */
-//    public function denyPermission($mask) {
-//        $this->doSetPermission($mask, $this->acl, $this->securityIdentity, false);
-//        
-//        return $this;
-//    }
-    
-//    /**
-//     * @param integer $mask
-//     * @param Acl $acl
-//     * @param SecurityIdentityInterface $securityIdentity
-//     * @param boolean $granting
-//     * @param integer $index 
-//     */
-//    protected function doSetPermission($mask, Acl $acl, SecurityIdentityInterface $securityIdentity, $granting = true, $index = 0) {
-//        if (!is_integer($mask)) {
-//            throw new InvalidTypeException('$mask must be an integer');
-//        }
-//        
-//        $acl->insertObjectAce($securityIdentity, $mask, $index, $granting);
-//        $this->aclProvider->updateAcl($acl);
-//    }
-    
     /**
      * @param mixed $entity 
      */
@@ -189,51 +153,69 @@ class AclManager {
      * @param integer $index 
      */
     protected function doSetObjectPermission($mask, Acl $acl, SecurityIdentityInterface $securityIdentity, $granting = true, $index = 0) {
-        $objectAces = $acl->getObjectAces();
-        
-        $this->doSetPermission('objectAce', $objectAces, array(
+        $this->doSetPermission('object', $acl, array(
             'mask'              => $mask,
-            'acl'               => $acl,
             'securityIdentity'  => $securityIdentity,
             'granting'          => $granting,
             'index'             => $index,
         ));
     }
     
-    protected function doSetPermission($type, $aceCollection, array $args) {
+    /**
+     * @param type $mask
+     * @param Acl $acl
+     * @param SecurityIdentityInterface $securityIdentity
+     * @param type $granting
+     * @param type $index 
+     */
+    protected function doSetClassPermission($mask, Acl $acl, SecurityIdentityInterface $securityIdentity, $granting = true, $index = 0) {
+        $this->doSetPermission('class', $acl, array(
+            'mask'              => $mask,
+            'securityIdentity'  => $securityIdentity,
+            'granting'          => $granting,
+            'index'             => $index,
+        ));
+    }
+    
+    /**
+     * Takes an ACE type (class/object), an ACL and an array of settings (mask, identity, granting, index)
+     * Loads an ACE collection from the ACL and updates the permissions (creating if no appropriate ACE exists)
+     * 
+     * @param string $type
+     * @param array $aceCollection
+     * @param array $args 
+     */
+    protected function doSetPermission($type, Acl $acl, array $args) {
         $defaults = array(
             'mask'              => 0,
-            'acl'               => null,
             'securityIdentity'  => null,
             'granting'          => true,
             'index'             => 0,
         );
         $settings = array_merge($defaults, $args);
-        $preppedType = ucfirst($settings);
+        $preppedType = ucfirst($type);
+        
+        $aceCollection = call_user_func(array($acl, "get{$preppedType}Aces"));
         
         $aceFound = false;
         foreach ($aceCollection as $index=>$ace) {
             if (($ace->getSecurityIdentity() === $settings['securityIdentity']) && ($ace->getMask() === $settings['mask'])) {
                 if ($ace->isGranting() === $settings['granting']) {
-                    call_user_func(array($settings['acl'], "update{$preppedType}"), 
+                    call_user_func(array($acl, "update{$preppedType}Ace"), 
                             $settings['index'], $settings['mask']);
-//                    $acl->updateClassAce($index, $mask);
                 } else {
-                    call_user_func(array($settings['acl'], "delete{$preppedType}"), 
+                    call_user_func(array($acl, "delete{$preppedType}Ace"), 
                             $settings['index']);
-//                    $acl->deleteClassAce($index);
-                    call_user_func(array($settings['acl'], "insert{$preppedType}"), 
+                    call_user_func(array($acl, "insert{$preppedType}Ace"), 
                             $settings['securityIdentity'], $settings['mask'], $settings['index'], $settings['granting']);
-//                    $acl->insertClassAce($securityIdentity, $mask, $index, $granting);
                 }
                 $aceFound = true;
             }
         }
         
         if (!$aceFound) {
-            call_user_func(array($settings['acl'], "insert{$preppedType}"),
+            call_user_func(array($acl, "insert{$preppedType}Ace"),
                     $settings['securityIdentity'], $settings['mask'], $settings['index'], $settings['granting']);
-//            $acl->insertClassAce($securityIdentity, $mask, $index, $granting);
         }
     }
     
@@ -245,25 +227,6 @@ class AclManager {
         $this->doSetClassPermission($mask, $this->acl, $this->securityIdentity);
         
         return $this;
-    }
-    
-    /**
-     * @param type $mask
-     * @param Acl $acl
-     * @param SecurityIdentityInterface $securityIdentity
-     * @param type $granting
-     * @param type $index 
-     */
-    protected function doSetClassPermission($mask, Acl $acl, SecurityIdentityInterface $securityIdentity, $granting = true, $index = 0) {
-        $classAces = $acl->getClassAces();
-        
-        $this->doSetPermission('classAce', $classAces, array(
-            'mask'              => $mask,
-            'acl'               => $acl,
-            'securityIdentity'  => $securityIdentity,
-            'granting'          => $granting,
-            'index'             => $index,
-        ));
     }
     
     /**
