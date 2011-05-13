@@ -112,7 +112,7 @@ class AclManager {
     protected function doInstallDefaultAccess($entity) {
         $acl = $this->doLoadAcl($entity);
         
-        $builder = $this->maskBuilder->reset();
+        $builder = $this->getMaskBuilder();
 
         $builder->add('iddqd');
         $acl->insertClassAce(new RoleSecurityIdentity('ROLE_SUPER_ADMIN'), $builder->get());
@@ -203,21 +203,20 @@ class AclManager {
             'index'             => 0,
         );
         $settings = array_merge($defaults, $args);
-        $preppedType = ucfirst($type);
         
-        $aceCollection = call_user_func(array($acl, "get{$preppedType}Aces"));
+        $aceCollection = call_user_func(array($acl, "get{$type}Aces"));
         $aceFound = false;
         
         //we iterate backwards because removing an ACE reorders everything after it, which will cause unexpected results when iterating forward
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
             if (($aceCollection[$i]->getSecurityIdentity() === $settings['securityIdentity']) && ($aceCollection[$i]->getMask() === $settings['mask'])) {
                 if ($aceCollection[$i]->isGranting() === $settings['granting']) {
-                    call_user_func(array($acl, "update{$preppedType}Ace"), 
-                            $settings['index'], $settings['mask']);
+                    call_user_func(array($acl, "update{$type}Ace"), 
+                            $i, $settings['mask']);
                 } else {
-                    call_user_func(array($acl, "delete{$preppedType}Ace"), 
-                            $settings['index']);
-                    call_user_func(array($acl, "insert{$preppedType}Ace"), 
+                    call_user_func(array($acl, "delete{$type}Ace"), 
+                            $i);
+                    call_user_func(array($acl, "insert{$type}Ace"), 
                             $settings['securityIdentity'], $settings['mask'], $settings['index'], $settings['granting']);
                 }
                 $aceFound = true;
@@ -225,7 +224,7 @@ class AclManager {
         }
         
         if (!$aceFound) {
-            call_user_func(array($acl, "insert{$preppedType}Ace"),
+            call_user_func(array($acl, "insert{$type}Ace"),
                     $settings['securityIdentity'], $settings['mask'], $settings['index'], $settings['granting']);
         }
     }
@@ -234,7 +233,7 @@ class AclManager {
      * @return MaskBuilder
      */
     public function getMaskBuilder() {
-        return $this->maskBuilder;
+        return $this->maskBuilder->reset();
     }
     
     /**
