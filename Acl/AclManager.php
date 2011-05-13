@@ -27,6 +27,10 @@ class AclManager {
      * @var Acl
      */
     protected $acl;
+    
+    /**
+     * @var SecurityIdentityInterface
+     */
     protected $securityIdentity;
     
     public function __construct(SecurityContext $securityContext, MutableAclProvider $aclProvider) {
@@ -197,7 +201,8 @@ class AclManager {
         
         //we iterate backwards because removing an ACE reorders everything after it, which will cause unexpected results when iterating forward
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
-            if (($aceCollection[$i]->getSecurityIdentity() === $settings['securityIdentity']) && ($aceCollection[$i]->getMask() === $settings['mask'])) {
+            // how do we check ace equivalency?
+            if (($aceCollection[$i]->getSecurityIdentity() === $settings['securityIdentity']) && ($aceCollection[$i]->isGranting() === $settings['granting'])) {
                 if ($aceCollection[$i]->isGranting() === $settings['granting']) {
                     call_user_func(array($acl, "update{$type}Ace"), 
                             $i, $settings['mask']);
@@ -234,7 +239,7 @@ class AclManager {
     }
     
     /**
-     * @return SecurityIdentity
+     * @return SecurityIdentityInterface
      */
     public function getSecurityIdentity() {
         return $this->securityIdentity;
