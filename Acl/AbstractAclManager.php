@@ -128,7 +128,6 @@ abstract class AbstractAclManager implements AclManagerInterface {
     }
     
     /**
-     * Takes an ACE type (class/object), an ACL and an array of settings (mask, identity, granting, index)
      * Loads an ACE collection from the ACL and updates the permissions (creating if no appropriate ACE exists)
      * 
      * @todo refactor this code to transactionalize ACL updating
