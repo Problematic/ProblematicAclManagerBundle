@@ -19,7 +19,7 @@ use Problematic\AclManagerBundle\Exception\InvalidIdentityException;
 use Problematic\AclManagerBundle\Exception\AclNotLoadedException;
 
 /**
- * Low-level functionality to be extended by production AclManager
+ * abstract class containing low-level functionality (plumbing) to be extended by production AclManager (porcelain)
  */
 abstract class AbstractAclManager implements AclManagerInterface {
     protected $securityContext;
@@ -31,7 +31,9 @@ abstract class AbstractAclManager implements AclManagerInterface {
         $this->aclProvider = $aclProvider;
     }
     
-        /**
+    /**
+     * Loads an ACL from the ACL provider, first by attempting to create, then finding if it already exists
+     * 
      * @param mixed $entity
      * @return Acl
      */
@@ -45,15 +47,24 @@ abstract class AbstractAclManager implements AclManagerInterface {
             $acl = $this->aclProvider->findAcl($objectIdentity);
         }
         
-        $this->acl = $acl;
-        
-        return true;
+        return $acl;
     }
     
+    /**
+     * Tells us whether we currently have an ACL currently loaded
+     * 
+     * @return boolean
+     */
     protected function isAclLoaded() {
         return (null !== $this->acl) && $this->acl instanceof Acl;
     }
     
+    /**
+     * Wraps MutableAclProvider#updateAcl() to check if we currently have an ACL loaded
+     * 
+     * @throws AclNotLoadedException
+     * @return void
+     */
     protected function doUpdateAcl() {
         if (!$this->isAclLoaded()) {
             throw new AclNotLoadedException("You must load a valid ACL before attempting to update it with the ACL provider");
@@ -63,21 +74,32 @@ abstract class AbstractAclManager implements AclManagerInterface {
     }
     
     /**
+     * Returns an instance of PermissionContext with security identity and permission mask
+     * 
      * @param SecurityIdentityInterface $securityIdentity
      * @param integer $mask
      * @return PermissionContext 
      */
-    protected function doCreatePermissionContext($type, SecurityIdentityInterface $securityIdentity, $mask) {
+    protected function doCreatePermissionContext(SecurityIdentityInterface $securityIdentity, array $args) {
+        $defaults = array(
+            'securityIdentity'  => null,
+            'mask'              => 0,
+            'type'              => 'object', // 'object' or 'class
+        );
+        $settings = array_merge($defaults, $args);
+        
         $permissionContext = new PermissionContext();
-        $permissionContext->setSecurityIdentity($securityIdentity);
-        $permissionContext->setPermissionMask($mask);
-        $permissionContext->setPermissionType($type);
+        $permissionContext->setSecurityIdentity($settings['securityIdentity']);
+        $permissionContext->setPermissionMask($settings['mask']);
+        $permissionContext->setPermissionType($settings['type']);
         
         return $permissionContext;
     }
     
     /**
+     * Creates a new object instanceof SecurityIdentityInterface from input implementing one of UserInterface, TokenInterface or RoleInterface
      * @param mixed $identity
+     * @throws InvalidIdentityException
      * @return SecurityIdentityInterface 
      */
     protected function doCreateSecurityIdentity($identity) {
@@ -105,51 +127,16 @@ abstract class AbstractAclManager implements AclManagerInterface {
         return $securityIdentity;
     }
     
-    protected function doInstallDefaultAccess($entity) {
-        $acl = $this->doLoadAcl($entity);
-        
-        $builder = $this->getMaskBuilder();
-
-        $builder->add('iddqd');
-        $this->doSetPermission('class', $acl, array(
-            'mask'              => $builder->get(),
-            'securityIdentity'  => new RoleSecurityIdentity('ROLE_SUPER_ADMIN'),
-        ));
-
-        $builder->reset();
-        $builder->add('master');
-        $this->doSetPermission('class', $acl, array(
-            'mask'              => $builder->get(),
-            'securityIdentity'  => new RoleSecurityIdentity('ROLE_ADMIN'),
-        ));
-
-        $builder->reset();
-        $builder->add('view');
-        $this->doSetPermission('class', $acl, array(
-            'mask'              => $builder->get(),
-            'securityIdentity'  => new RoleSecurityIdentity('IS_AUTHENTICATED_ANONYMOUSLY'),
-        ));
-
-        $builder->reset();
-        $builder->add('create');
-        $builder->add('view');
-        $this->doSetPermission('class', $acl, array(
-            'mask'              => $builder->get(),
-            'securityIdentity'  => new RoleSecurityIdentity('ROLE_USER'),
-        ));
-        
-        return true;
-    }
-    
     /**
      * Takes an ACE type (class/object), an ACL and an array of settings (mask, identity, granting, index)
      * Loads an ACE collection from the ACL and updates the permissions (creating if no appropriate ACE exists)
      * 
      * @todo refactor this code to transactionalize ACL updating
-     * 
      * @param PermissionContextInterface $context
+     * @throws AclNotLoadedException
+     * @return void
      */
-    protected function doSetPermission(PermissionContextInterface $context) {
+    protected function doApplyPermission(PermissionContextInterface $context) {
         if (!$this->isAclLoaded()) {
             throw new AclNotLoadedException("You must load a valid ACL before attempting to set permissions on it");
         }

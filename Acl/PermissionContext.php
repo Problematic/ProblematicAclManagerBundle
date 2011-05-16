@@ -9,6 +9,8 @@ use Problematic\AclManagerBundle\Acl\PermissionContextInterface;
 class PermissionContext implements PermissionContextInterface {
     protected $permissionMask;
     protected $securityIdentity;
+    protected $permissionType;
+    protected $granting;
     
     public function __construct() {}
     
@@ -24,6 +26,20 @@ class PermissionContext implements PermissionContextInterface {
     }
     public function getSecurityIdentity() {
         return $this->securityIdentity;
+    }
+    
+    public function setPermissionType($type) {
+        $this->permissionType = $type;
+    }
+    public function getPermissionType() {
+        return $this->permissionType;
+    }
+    
+    public function setGranting($granting) {
+        $this->granting = $granting;
+    }
+    public function isGranting() {
+        return $this->granting;
     }
 }
 

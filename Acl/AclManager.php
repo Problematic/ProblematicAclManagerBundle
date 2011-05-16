@@ -41,8 +41,8 @@ class AclManager extends AbstractAclManager {
         return $this;
     }
     
-    public function createPermissionContext($type, SecurityIdentityInterface $securityIdentity, $mask) {
-        return $this->doCreatePermissionContext($type, $securityIdentity, $mask);
+    public function createPermissionContext(SecurityIdentityInterface $securityIdentity, array $args) {
+        return $this->doCreatePermissionContext($securityIdentity, $args);
     }
     public function addPermissionContext(PermissionContextInterface $permissionContext, $key = null) {
         if (null === $key) {
@@ -62,12 +62,12 @@ class AclManager extends AbstractAclManager {
         return $this->doCreateSecurityIdentity($identity);
     }
     
-    public function loadAcl($entityContext = null) {
-        if ((null === $entityContext) && !$this->hasEntityContext()) {
+    public function loadAcl($entity = null) {
+        if ((null === $entity) && !$this->hasEntityContext()) {
             throw new Exception("Set an entity context before trying to load an ACL");
         }
-        $entityContext = $entityContext ?: $this->entityContext;
-        $this->doLoadAcl($entityContext);
+        $entityContext = $entity ?: $this->entityContext;
+        $this->acl = $this->doLoadAcl($entityContext);
         
         return $this;
     }
@@ -78,14 +78,8 @@ class AclManager extends AbstractAclManager {
         return $this;
     }
     
-    public function installDefaultAccess() {
-        $this->doInstallDefaultAccess($this->entityContext);
-        
-        return $this;
-    }
-    
-    public function setPermission(PermissionContextInterface $permissionContext) {
-        $this->doSetPermission($permissionContext);
+    public function applyPermission(PermissionContextInterface $permissionContext) {
+        $this->doApplyPermission($permissionContext);
         
         return $this;
     }
