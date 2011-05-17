@@ -5,17 +5,13 @@ namespace Problematic\AclManagerBundle\Acl;
 use Symfony\Component\Security\Acl\Dbal\MutableAclProvider;
 use Symfony\Component\Security\Acl\Domain\Acl;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
-use Symfony\Component\Security\Acl\Permission\MaskBuilder;
 use Symfony\Component\Security\Core\SecurityContext;
 
 class AclManager extends AbstractAclManager {
-    protected $maskBuilder;
     protected $permissionContextCollection = array();
     
     public function __construct(SecurityContext $securityContext, MutableAclProvider $aclProvider) {
         parent::__construct($securityContext, $aclProvider);
-        
-        $this->maskBuilder = new MaskBuilder();
     }
     
     public function processPermissions($reset = false) {
@@ -65,13 +61,6 @@ class AclManager extends AbstractAclManager {
         $this->doApplyPermission($permissionContext);
         
         return $this;
-    }
-    
-    /**
-     * @return MaskBuilder
-     */
-    public function getMaskBuilder() {
-        return $this->maskBuilder->reset();
     }
 }
 

@@ -75,7 +75,7 @@ abstract class AbstractAclManager {
     }
     
     /**
-     * Returns an instance of PermissionContext with security identity and permission mask
+     * Returns an instance of PermissionContext. If !$securityIdentity instanceof SecurityIdentityInterface, a new security identity will be created using it
      * 
      * @param string $type
      * @param $securityIdentity
