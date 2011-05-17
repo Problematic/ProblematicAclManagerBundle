@@ -5,7 +5,7 @@ namespace Problematic\AclManagerBundle\Acl;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 
 interface AclManagerInterface {
-    public function loadAcl($entity = null);
+    public function loadAcl($entity);
     public function updateAcl();
     
     public function createSecurityIdentity($identity);
