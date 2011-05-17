@@ -144,11 +144,11 @@ abstract class AbstractAclManager implements AclManagerInterface {
         $doInsert = false;
         
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
-            if ($aceCollection[$i]->getSecurityIdentity() === $context->getSecurityIdentity()) {
+            if ($aceCollection[$i]->getSecurityIdentity() == $context->getSecurityIdentity()) {
                 if ($aceCollection[$i]->isGranting() === $context->isGranting()) {
                     call_user_func(array($this->acl, "update{$type}Ace"), $i, $context->getPermissionMask());
                 } else {
-                    call_use_func(array($this->acl, "delete{$type}Ace"), $i);
+                    call_user_func(array($this->acl, "delete{$type}Ace"), $i);
                     $doInsert = true;
                 }
                 $aceFound = true;
