@@ -30,7 +30,7 @@ class AclManager extends AbstractAclManager {
     
     public function processPermissions($reset = false) {
         foreach ($this->permissionContextCollection as $permissionContext) {
-            $this->setPermission($permissionContext);
+            $this->applyPermission($permissionContext);
         }
         $this->updateAcl();
         
