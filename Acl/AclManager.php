@@ -10,22 +10,12 @@ use Symfony\Component\Security\Core\SecurityContext;
 
 class AclManager extends AbstractAclManager {
     protected $maskBuilder;
-    protected $entityContext;
     protected $permissionContextCollection = array();
     
     public function __construct(SecurityContext $securityContext, MutableAclProvider $aclProvider) {
         parent::__construct($securityContext, $aclProvider);
         
         $this->maskBuilder = new MaskBuilder();
-    }
-    
-    public function hasEntityContext() {
-        return (null !== $this->entityContext) && is_object($this->entityContext);
-    }
-    public function setEntityContext($entity) {
-        $this->entityContext = $entity;
-        
-        return $this;
     }
     
     public function processPermissions($reset = false) {
@@ -62,14 +52,11 @@ class AclManager extends AbstractAclManager {
         return $this->doCreateSecurityIdentity($identity);
     }
     
-    public function loadAcl($entity = null) {
-        if ((null === $entity || !is_object($entity)) && !$this->hasEntityContext()) {
+    public function loadAcl($entity) {
+        if (null === $entity || !is_object($entity)) {
             throw new Exception("Provide a valid entity context before trying to load an ACL");
         }
-        if (!$this->hasEntityContext()) {
-            $this->entityContext = $entity;
-        }
-        $this->acl = $this->doLoadAcl($this->entityContext);
+        $this->acl = $this->doLoadAcl($entity);
         
         return $this;
     }
