@@ -78,12 +78,16 @@ abstract class AbstractAclManager {
      * Returns an instance of PermissionContext with security identity and permission mask
      * 
      * @param string $type
-     * @param SecurityIdentityInterface $securityIdentity
+     * @param $securityIdentity
      * @param integer $mask
      * @param boolean $granting
      * @return PermissionContext 
      */
-    protected function doCreatePermissionContext($type, SecurityIdentityInterface $securityIdentity, $mask, $granting = true) {
+    protected function doCreatePermissionContext($type, $securityIdentity, $mask, $granting = true) {
+        if (!$securityIdentity instanceof SecurityIdentityInterface) {
+            $securityIdentity = $this->doCreateSecurityIdentity($securityIdentity);
+        }
+        
         $permissionContext = new PermissionContext();
         $permissionContext->setPermissionType($type);
         $permissionContext->setSecurityIdentity($securityIdentity);

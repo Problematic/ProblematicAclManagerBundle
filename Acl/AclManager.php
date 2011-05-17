@@ -31,7 +31,7 @@ class AclManager extends AbstractAclManager {
         return $this;
     }
     
-    public function createPermissionContext($type, SecurityIdentityInterface $securityIdentity, $mask, $granting = true) {
+    public function createPermissionContext($type, $securityIdentity, $mask, $granting = true) {
         return $this->doCreatePermissionContext($type, $securityIdentity, $mask, $granting);
     }
     public function addPermissionContext(PermissionContextInterface $permissionContext, $key = null) {
