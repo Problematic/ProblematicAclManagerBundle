@@ -185,6 +185,8 @@ abstract class AbstractAclManager {
         foreach ($permissionContexts as $context) {
             $this->doApplyPermission($context);
         }
+        
+        $this->doUpdateAcl();
     }
 }
 
