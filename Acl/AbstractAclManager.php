@@ -22,7 +22,7 @@ use Problematic\AclManagerBundle\Exception\AclNotLoadedException;
 /**
  * abstract class containing low-level functionality (plumbing) to be extended by production AclManager (porcelain)
  */
-abstract class AbstractAclManager implements AclManagerInterface {
+abstract class AbstractAclManager {
     protected $securityContext;
     protected $aclProvider;
     protected $acl;
