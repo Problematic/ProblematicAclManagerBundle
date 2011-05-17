@@ -9,6 +9,7 @@ use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
 use Symfony\Component\Security\Acl\Exception\AclAlreadyExistsException;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
+use Symfony\Component\Security\Acl\Permission\MaskBuilder;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Security\Core\Role\RoleInterface;
@@ -162,6 +163,27 @@ abstract class AbstractAclManager {
         if ($doInsert || !$aceFound) {
             call_user_func(array($this->acl, "insert{$type}Ace"),
                     $context->getSecurityIdentity(), $context->getPermissionMask(), 0, $context->isGranting());
+        }
+    }
+    
+    protected function doInstallDefaults() {
+        if (!$this->isAclLoaded()) {
+            throw new AclNotLoadedException("You must load a valid ACL before installing default permissions");
+        }
+        
+        $builder = new MaskBuilder();
+        $permissionContexts = array();
+        
+        $permissionContexts[] = $this->doCreatePermissionContext('class', 'ROLE_SUPER_ADMIN', MaskBuilder::MASK_IDDQD);
+        $permissionContexts[] = $this->doCreatePermissionContext('class', 'ROLE_ADMIN', MaskBuilder::MASK_MASTER);
+        $permissionContexts[] = $this->doCreatePermissionContext('class', 'IS_AUTHENTICATED_ANONYMOUSLY', MaskBuilder::MASK_VIEW);
+        
+        $builder->add('VIEW');
+        $builder->add('CREATE');
+        $permissionContexts[] = $this->doCreatePermissionContext('class', 'ROLE_USER', $builder->get());
+        
+        foreach ($permissionContexts as $context) {
+            $this->doApplyPermission($context);
         }
     }
 }

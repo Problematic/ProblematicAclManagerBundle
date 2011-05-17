@@ -62,6 +62,12 @@ class AclManager extends AbstractAclManager {
         
         return $this;
     }
+    
+    public function installDefaults() {
+        $this->doInstallDefaults();
+        
+        return $this;
+    }
 }
 
 ?>
