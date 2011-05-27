@@ -1,4 +1,6 @@
 ```php
+<?php
+
 $comment = new Comment(); // create some entity
 // ... do work on entity
 
@@ -10,4 +12,6 @@ $permissions = $aclManager->createPermissionContext('object', $userEntity, MaskB
 $aclManager->addPermissionContext($permissions);
 
 $aclManager->loadAcl($comment)->processPermissions()->installDefaults();
+
+?>
 ```
