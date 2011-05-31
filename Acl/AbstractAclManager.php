@@ -16,19 +16,18 @@ use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-use Problematic\AclManagerBundle\Acl\AclManagerInterface;
 use Problematic\AclManagerBundle\Exception\InvalidIdentityException;
-use Problematic\AclManagerBundle\Exception\AclNotLoadedException;
 
 /**
  * abstract class containing low-level functionality (plumbing) to be extended by production AclManager (porcelain)
  */
-abstract class AbstractAclManager {
+abstract class AbstractAclManager 
+{
     protected $securityContext;
     protected $aclProvider;
-    protected $acl;
     
-    public function __construct(SecurityContext $securityContext, MutableAclProvider $aclProvider) {
+    public function __construct(SecurityContext $securityContext, MutableAclProvider $aclProvider) 
+    {
         $this->securityContext = $securityContext;
         $this->aclProvider = $aclProvider;
     }
@@ -39,10 +38,12 @@ abstract class AbstractAclManager {
      * @param mixed $entity
      * @return Acl
      */
-    protected function doLoadAcl($entity) {
+    protected function doLoadAcl($entity) 
+    {
         $objectIdentity = ObjectIdentity::fromDomainObject($entity);
         
-        // is this faster than finding, and creating on null?
+        $acl = null;
+
         try {
             $acl = $this->aclProvider->createAcl($objectIdentity);
         } catch(AclAlreadyExistsException $ex) {
@@ -53,26 +54,14 @@ abstract class AbstractAclManager {
     }
     
     /**
-     * Tells us whether we currently have an ACL currently loaded
-     * 
-     * @return boolean
-     */
-    protected function isAclLoaded() {
-        return (null !== $this->acl) && $this->acl instanceof Acl;
-    }
-    
-    /**
      * Wraps MutableAclProvider#updateAcl() to check if we currently have an ACL loaded
      * 
      * @throws AclNotLoadedException
      * @return void
      */
-    protected function doUpdateAcl() {
-        if (!$this->isAclLoaded()) {
-            throw new AclNotLoadedException("You must load a valid ACL before attempting to update it with the ACL provider");
-        }
-        
-        $this->aclProvider->updateAcl($this->acl);
+    protected function doUpdateAcl($acl) 
+    {
+        $this->aclProvider->updateAcl($acl);
     }
     
     /**
@@ -84,7 +73,8 @@ abstract class AbstractAclManager {
      * @param boolean $granting
      * @return PermissionContext 
      */
-    protected function doCreatePermissionContext($type, $securityIdentity, $mask, $granting = true) {
+    protected function doCreatePermissionContext($type, $securityIdentity, $mask, $granting = true) 
+    {
         if (!$securityIdentity instanceof SecurityIdentityInterface) {
             $securityIdentity = $this->doCreateSecurityIdentity($securityIdentity);
         }
@@ -104,12 +94,13 @@ abstract class AbstractAclManager {
      * @throws InvalidIdentityException
      * @return SecurityIdentityInterface 
      */
-    protected function doCreateSecurityIdentity($identity) {
+    protected function doCreateSecurityIdentity($identity) 
+    {
         if (is_string($identity)) {
             $identity = new Role($identity);
         }
 
-        if (!($identity instanceof UserInterface) && !($identity instanceof TokenInterface) && !($identity instanceof RoleInterface)) {
+        if (!$identity instanceof UserInterface && !$identity instanceof TokenInterface && !$identity instanceof RoleInterface) {
             throw new InvalidIdentityException('$identity must implement one of: UserInterface, TokenInterface, RoleInterface (' . get_class($identity) . ' given)');
         }
         
@@ -137,23 +128,24 @@ abstract class AbstractAclManager {
      * @throws AclNotLoadedException
      * @return void
      */
-    protected function doApplyPermission(PermissionContextInterface $context) {
+    protected function doApplyPermission($acl, PermissionContextInterface $context) 
+    {
         if (!$this->isAclLoaded()) {
             throw new AclNotLoadedException("You must load a valid ACL before attempting to set permissions on it");
         }
         
         $type = $context->getPermissionType();
         
-        $aceCollection = call_user_func(array($this->acl, "get{$type}Aces"));
+        $aceCollection = call_user_func(array($acl, "get{$type}Aces"));
         $aceFound = false;
         $doInsert = false;
         
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
             if ($aceCollection[$i]->getSecurityIdentity() == $context->getSecurityIdentity()) {
                 if ($aceCollection[$i]->isGranting() === $context->isGranting()) {
-                    call_user_func(array($this->acl, "update{$type}Ace"), $i, $context->getPermissionMask());
+                    call_user_func(array($acl, "update{$type}Ace"), $i, $context->getPermissionMask());
                 } else {
-                    call_user_func(array($this->acl, "delete{$type}Ace"), $i);
+                    call_user_func(array($acl, "delete{$type}Ace"), $i);
                     $doInsert = true;
                 }
                 $aceFound = true;
@@ -161,16 +153,13 @@ abstract class AbstractAclManager {
         }
         
         if ($doInsert || !$aceFound) {
-            call_user_func(array($this->acl, "insert{$type}Ace"),
+            call_user_func(array($acl, "insert{$type}Ace"),
                     $context->getSecurityIdentity(), $context->getPermissionMask(), 0, $context->isGranting());
         }
     }
     
-    protected function doInstallDefaults() {
-        if (!$this->isAclLoaded()) {
-            throw new AclNotLoadedException("You must load a valid ACL before installing default permissions");
-        }
-        
+    protected function doInstallDefaults($acl) 
+    {
         $builder = new MaskBuilder();
         $permissionContexts = array();
         
@@ -183,11 +172,9 @@ abstract class AbstractAclManager {
         $permissionContexts[] = $this->doCreatePermissionContext('class', 'ROLE_USER', $builder->get());
         
         foreach ($permissionContexts as $context) {
-            $this->doApplyPermission($context);
+            $this->doApplyPermission($acl, $context);
         }
         
-        $this->doUpdateAcl();
+        $this->doUpdateAcl($acl);
     }
 }
-
-?>
