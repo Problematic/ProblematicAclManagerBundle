@@ -1,12 +1,14 @@
 <?php
 
-namespace Problematic\AclManagerBundle\Acl;
+namespace Problematic\AclManagerBundle;
 
 use Symfony\Component\Security\Acl\Dbal\MutableAclProvider;
 use Symfony\Component\Security\Acl\Domain\Acl;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 use Symfony\Component\Security\Core\SecurityContext;
 
+use Problematic\AclManagerBundle\Acl\AbstractAclManager;
+use Problematic\AclManagerBundle\Acl\PermissionContextInterface;
 use Problematic\AclManagerBundle\Exception\AclNotLoadedException;
 
 class AclManager extends AbstractAclManager 
@@ -99,5 +101,3 @@ class AclManager extends AbstractAclManager
         return $this;
     }
 }
-
-?>

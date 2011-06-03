@@ -2,9 +2,12 @@
 
 namespace Problematic\AclManagerBundle\Acl;
 
-use Symfony\Component\Security\Acl\Dbal\MutableAclProvider;
+use Symfony\Component\Security\Acl\Model\MutableAclProviderInterface;
 use Symfony\Component\Security\Acl\Domain\Acl;
+use Symfony\Component\Security\Acl\Model\MutableAclInterface;
+use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
 use Symfony\Component\Security\Acl\Exception\AclAlreadyExistsException;
@@ -17,6 +20,7 @@ use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 use Problematic\AclManagerBundle\Exception\InvalidIdentityException;
+use Problematic\AclManagerBundle\Acl\PermissionContextInterface;
 
 /**
  * abstract class containing low-level functionality (plumbing) to be extended by production AclManager (porcelain)
@@ -26,7 +30,7 @@ abstract class AbstractAclManager
     protected $securityContext;
     protected $aclProvider;
     
-    public function __construct(SecurityContext $securityContext, MutableAclProvider $aclProvider) 
+    public function __construct(SecurityContext $securityContext, MutableAclProviderInterface $aclProvider) 
     {
         $this->securityContext = $securityContext;
         $this->aclProvider = $aclProvider;
@@ -36,7 +40,7 @@ abstract class AbstractAclManager
      * Loads an ACL from the ACL provider, first by attempting to create, then finding if it already exists
      * 
      * @param mixed $entity
-     * @return Acl
+     * @return MutableAclInterface
      */
     protected function doLoadAcl($entity) 
     {
@@ -53,13 +57,21 @@ abstract class AbstractAclManager
         return $acl;
     }
     
+    protected function doRemoveAcl($token)
+    {
+        if (!$token instanceof ObjectIdentityInterface) {
+            $token = ObjectIdentity::fromDomainObject($token);
+        }
+        
+        $this->aclProvider->deleteAcl($token);
+    }
+    
     /**
      * Wraps MutableAclProvider#updateAcl() to check if we currently have an ACL loaded
      * 
-     * @throws AclNotLoadedException
      * @return void
      */
-    protected function doUpdateAcl($acl) 
+    protected function doUpdateAcl(MutableAclInterface $acl) 
     {
         $this->aclProvider->updateAcl($acl);
     }
@@ -124,25 +136,20 @@ abstract class AbstractAclManager
      * Loads an ACE collection from the ACL and updates the permissions (creating if no appropriate ACE exists)
      * 
      * @todo refactor this code to transactionalize ACL updating
+     * @param MutableAclInterface $acl
      * @param PermissionContextInterface $context
-     * @throws AclNotLoadedException
      * @return void
      */
-    protected function doApplyPermission($acl, PermissionContextInterface $context) 
+    protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context) 
     {
-        if (!$this->isAclLoaded()) {
-            throw new AclNotLoadedException("You must load a valid ACL before attempting to set permissions on it");
-        }
-        
         $type = $context->getPermissionType();
-        
-        $aceCollection = call_user_func(array($acl, "get{$type}Aces"));
+        $aceCollection = $this->getAceCollection($acl, $context);
         $aceFound = false;
         $doInsert = false;
         
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
-            if ($aceCollection[$i]->getSecurityIdentity() == $context->getSecurityIdentity()) {
-                if ($aceCollection[$i]->isGranting() === $context->isGranting()) {
+            if ($this->aceMatches($aceCollection[$i], $context)) {
+                if ($this->aceMatches($aceCollection[$i], $context, array('granting'))) {
                     call_user_func(array($acl, "update{$type}Ace"), $i, $context->getPermissionMask());
                 } else {
                     call_user_func(array($acl, "delete{$type}Ace"), $i);
@@ -158,7 +165,19 @@ abstract class AbstractAclManager
         }
     }
     
-    protected function doInstallDefaults($acl) 
+    protected function doRemovePermission(MutableAclInterface $acl, PermissionContextInterface $context)
+    {
+        $type = $context->getPermissionType();
+        $aceCollection = $this->getAceCollection($acl, $context);
+        
+        for ($i=count($aceCollection)-1; $i>=0; $i--) {
+            if ($this->aceMatches($aceCollection[$i], $context, array('sid', 'perms'))) {
+                call_user_func(array($acl, "delete{$type}Ace"), $i);
+            }
+        }
+    }
+    
+    protected function doInstallDefaults(MutableAclInterface $acl) 
     {
         $builder = new MaskBuilder();
         $permissionContexts = array();
@@ -176,5 +195,44 @@ abstract class AbstractAclManager
         }
         
         $this->doUpdateAcl($acl);
+    }
+    
+    private function aceMatches(AuditableEntryInterface $ace, PermissionContextInterface $context, array $checks = array())
+    {
+        if (empty($checks)) {
+            $checks[] = 'sid';
+        }
+        
+        $isMatch = false;
+        if (in_array('sid', $checks)) {
+            if ($ace->getSecurityIdentity() == $context->getSecurityIdentity()) {
+                $isMatch = true;
+            } else {
+                return false;
+            }
+        }
+        if (in_array('granting', $checks)) {
+            if ($ace->isGranting() == $context->isGranting()) {
+                $isMatch = true;
+            } else {
+                return false;
+            }
+        }
+        if (in_array('perms', $checks)) {
+            if ($ace->getMask() == $context->getPermissionMask() && $ace->isGranting() == $context->isGranting()) {
+                $isMatch = true;
+            } else {
+                return false;
+            }
+        }
+        
+        return $isMatch;
+    }
+    
+    private function getAceCollection(MutableAclInterface $acl, PermissionContextInterface $context)
+    {
+        $aceCollection = call_user_func(array($acl, "get{$context->getPermissionType()}Aces"));
+        
+        return $aceCollection;
     }
 }
