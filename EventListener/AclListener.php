@@ -20,6 +20,9 @@ class AclListener
     {
         $this->loadAcl($event);
         $this->manager->processPermissions();
+        if ($event->getInstallDefaults()) {
+            $this->manager->installDefaults();
+        }
     }
     
     private function loadAcl(FilterAclManagerEvent $event)
