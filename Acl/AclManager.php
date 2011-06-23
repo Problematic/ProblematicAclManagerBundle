@@ -1,6 +1,6 @@
 <?php
 
-namespace Problematic\AclManagerBundle;
+namespace Problematic\AclManagerBundle\Acl;
 
 use Symfony\Component\Security\Acl\Dbal\MutableAclProvider;
 use Symfony\Component\Security\Acl\Domain\Acl;
