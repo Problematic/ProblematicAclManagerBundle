@@ -3,7 +3,6 @@
 namespace Problematic\AclManagerBundle\Acl;
 
 use Symfony\Component\Security\Acl\Model\MutableAclProviderInterface;
-use Symfony\Component\Security\Acl\Domain\Acl;
 use Symfony\Component\Security\Acl\Model\MutableAclInterface;
 use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
@@ -150,9 +149,9 @@ abstract class AbstractAclManager
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
             if ($this->aceMatches($aceCollection[$i], $context)) {
                 if ($this->aceMatches($aceCollection[$i], $context, array('granting'))) {
-                    call_user_func(array($acl, "update{$type}Ace"), $i, $context->getPermissionMask());
+                    $acl->{"update{$type}Ace"}($i, $context->getPermissionMask());
                 } else {
-                    call_user_func(array($acl, "delete{$type}Ace"), $i);
+                    $acl->{"delete{$type}Ace"}($i);
                     $doInsert = true;
                 }
                 $aceFound = true;
@@ -160,8 +159,8 @@ abstract class AbstractAclManager
         }
         
         if ($doInsert || !$aceFound) {
-            call_user_func(array($acl, "insert{$type}Ace"),
-                    $context->getSecurityIdentity(), $context->getPermissionMask(), 0, $context->isGranting());
+            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getPermissionMask(), 
+                0, $context->isGranting());
         }
     }
     
@@ -172,7 +171,7 @@ abstract class AbstractAclManager
         
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
             if ($this->aceMatches($aceCollection[$i], $context, array('sid', 'perms'))) {
-                call_user_func(array($acl, "delete{$type}Ace"), $i);
+                $acl->{"delete{$type}Ace"}($i);
             }
         }
     }
@@ -231,7 +230,7 @@ abstract class AbstractAclManager
     
     private function getAceCollection(MutableAclInterface $acl, PermissionContextInterface $context)
     {
-        $aceCollection = call_user_func(array($acl, "get{$context->getPermissionType()}Aces"));
+        $aceCollection = $acl->{"get{$context->getPermissionType()}Aces"}();
         
         return $aceCollection;
     }
