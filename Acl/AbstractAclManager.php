@@ -20,6 +20,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Problematic\AclManagerBundle\Acl\AclManagerInterface;
 use Problematic\AclManagerBundle\Exception\InvalidIdentityException;
 use Problematic\AclManagerBundle\Acl\PermissionContextInterface;
+use Problematic\AclManagerBundle\Model\AclManagerInterface;
 
 /**
  * abstract class containing low-level functionality (plumbing) to be extended by production AclManager (porcelain)

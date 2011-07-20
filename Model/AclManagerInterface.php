@@ -1,6 +1,6 @@
 <?php
 
-namespace Problematic\AclManagerBundle\Acl;
+namespace Problematic\AclManagerBundle\Model;
 
 interface AclManagerInterface
 {

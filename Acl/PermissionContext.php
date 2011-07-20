@@ -4,7 +4,7 @@ namespace Problematic\AclManagerBundle\Acl;
 
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 
-use Problematic\AclManagerBundle\Acl\PermissionContextInterface;
+use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 
 class PermissionContext implements PermissionContextInterface {
     protected $permissionMask;
