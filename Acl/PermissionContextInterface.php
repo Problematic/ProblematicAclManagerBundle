@@ -5,8 +5,8 @@ namespace Problematic\AclManagerBundle\Acl;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 
 interface PermissionContextInterface {
-    public function setPermissionMask($mask);
-    public function getPermissionMask();
+    public function setMask($mask);
+    public function getMask();
     
     public function setSecurityIdentity(SecurityIdentityInterface $securityIdentity);
     public function getSecurityIdentity();

@@ -14,10 +14,10 @@ class PermissionContext implements PermissionContextInterface {
     
     public function __construct() {}
     
-    public function setPermissionMask($mask) {
+    public function setMask($mask) {
         $this->permissionMask = $mask;
     }
-    public function getPermissionMask() {
+    public function getMask() {
         return $this->permissionMask;
     }
     
