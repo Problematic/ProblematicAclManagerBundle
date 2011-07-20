@@ -13,9 +13,8 @@ use Symfony\Component\Security\Acl\Exception\AclAlreadyExistsException;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 use Symfony\Component\Security\Acl\Permission\MaskBuilder;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Security\Core\Role\RoleInterface;
-use Symfony\Component\Security\Core\SecurityContext;
+use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Problematic\AclManagerBundle\Acl\AclManagerInterface;
 use Problematic\AclManagerBundle\Exception\InvalidIdentityException;
@@ -30,7 +29,7 @@ abstract class AbstractAclManager implements AclManagerInterface
     protected $securityContext;
     protected $aclProvider;
     
-    public function __construct(SecurityContext $securityContext, MutableAclProviderInterface $aclProvider) 
+    public function __construct(SecurityContextInterface $securityContext, MutableAclProviderInterface $aclProvider) 
     {
         $this->securityContext = $securityContext;
         $this->aclProvider = $aclProvider;
@@ -101,18 +100,15 @@ abstract class AbstractAclManager implements AclManagerInterface
     }
     
     /**
-     * Creates a new object instanceof SecurityIdentityInterface from input implementing one of UserInterface, TokenInterface or RoleInterface
+     * Creates a new object instanceof SecurityIdentityInterface from input implementing one of UserInterface, TokenInterface or RoleInterface (or its string representation)
      * @param mixed $identity
      * @throws InvalidIdentityException
      * @return SecurityIdentityInterface 
      */
     protected function doCreateSecurityIdentity($identity) 
     {
-        if (is_string($identity)) {
-            $identity = new Role($identity);
-        }
 
-        if (!$identity instanceof UserInterface && !$identity instanceof TokenInterface && !$identity instanceof RoleInterface) {
+        if (!$identity instanceof UserInterface && !$identity instanceof TokenInterface && !$identity instanceof RoleInterface && !is_string($identity)) {
             throw new InvalidIdentityException('$identity must implement one of: UserInterface, TokenInterface, RoleInterface (' . get_class($identity) . ' given)');
         }
         
@@ -121,7 +117,7 @@ abstract class AbstractAclManager implements AclManagerInterface
             $securityIdentity = UserSecurityIdentity::fromAccount($identity);
         } else if ($identity instanceof TokenInterface) {
             $securityIdentity = UserSecurityIdentity::fromToken($identity);
-        } else if ($identity instanceof RoleInterface) {
+        } else if ($identity instanceof RoleInterface || is_string($identity)) {
             $securityIdentity = new RoleSecurityIdentity($identity);
         }
 
