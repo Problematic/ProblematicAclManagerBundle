@@ -17,14 +17,14 @@ use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\Security\Core\User\UserInterface;
-
+use Problematic\AclManagerBundle\Acl\AclManagerInterface;
 use Problematic\AclManagerBundle\Exception\InvalidIdentityException;
 use Problematic\AclManagerBundle\Acl\PermissionContextInterface;
 
 /**
  * abstract class containing low-level functionality (plumbing) to be extended by production AclManager (porcelain)
  */
-abstract class AbstractAclManager 
+abstract class AbstractAclManager implements AclManagerInterface
 {
     protected $securityContext;
     protected $aclProvider;
@@ -218,7 +218,7 @@ abstract class AbstractAclManager
             }
         }
         if (in_array('perms', $checks)) {
-            if ($ace->getMask() == $context->getPermissionMask() && $ace->isGranting() == $context->isGranting()) {
+            if ($ace->getMask() == $context->getMask() && $ace->isGranting() == $context->isGranting()) {
                 $isMatch = true;
             } else {
                 return false;
