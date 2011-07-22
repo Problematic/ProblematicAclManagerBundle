@@ -16,9 +16,8 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Problematic\AclManagerBundle\Acl\AclManagerInterface;
 use Problematic\AclManagerBundle\Exception\InvalidIdentityException;
-use Problematic\AclManagerBundle\Acl\PermissionContextInterface;
+use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Problematic\AclManagerBundle\Model\AclManagerInterface;
 
 /**
