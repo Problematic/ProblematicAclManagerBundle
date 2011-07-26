@@ -9,7 +9,6 @@ use Symfony\Component\Security\Core\SecurityContext;
 use Problematic\AclManagerBundle\Model\AclManagerInterface;
 use Problematic\AclManagerBundle\Acl\AbstractAclManager;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
-use Problematic\AclManagerBundle\Exception\AclNotLoadedException;
 
 class AclManager extends AbstractAclManager 
 {
@@ -74,7 +73,7 @@ class AclManager extends AbstractAclManager
     public function loadAcl($entity) 
     {
         if (null === $entity || !is_object($entity)) {
-            throw new Exception("Provide a valid entity context before trying to load an ACL");
+            throw new \InvalidArgumentException('Provide a valid entity context before trying to load an ACL');
         }
         $this->acl = $this->doLoadAcl($entity);
         
@@ -84,7 +83,7 @@ class AclManager extends AbstractAclManager
     public function updateAcl() 
     {
         if (!$this->isAclLoaded()) {
-            throw new AclNotLoadedException("You must load a valid ACL before attempting to update it with the ACL provider");
+            throw new \LogicException('You must load a valid ACL before attempting to update it with the ACL provider');
         }
         
         $this->doUpdateAcl($this->acl);
