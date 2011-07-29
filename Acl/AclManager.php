@@ -9,6 +9,7 @@ use Symfony\Component\Security\Core\SecurityContext;
 use Problematic\AclManagerBundle\Model\AclManagerInterface;
 use Problematic\AclManagerBundle\Acl\AbstractAclManager;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
+use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 
 class AclManager extends AbstractAclManager 
 {
@@ -72,10 +73,8 @@ class AclManager extends AbstractAclManager
     
     public function loadAcl($entity) 
     {
-        if (null === $entity || !is_object($entity)) {
-            throw new \InvalidArgumentException('Provide a valid entity context before trying to load an ACL');
-        }
-        $this->acl = $this->doLoadAcl($entity);
+        $oid = ObjectIdentity::fromDomainObject($entity);
+        $this->acl = $this->doLoadAcl($oid);
         
         return $this;
     }

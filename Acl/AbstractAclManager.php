@@ -5,7 +5,6 @@ namespace Problematic\AclManagerBundle\Acl;
 use Symfony\Component\Security\Acl\Model\MutableAclProviderInterface;
 use Symfony\Component\Security\Acl\Model\MutableAclInterface;
 use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
@@ -39,12 +38,9 @@ abstract class AbstractAclManager implements AclManagerInterface
      * @param mixed $entity
      * @return MutableAclInterface
      */
-    protected function doLoadAcl($entity) 
+    protected function doLoadAcl(ObjectIdentityInterface $objectIdentity) 
     {
-        $objectIdentity = ObjectIdentity::fromDomainObject($entity);
-        
         $acl = null;
-
         try {
             $acl = $this->aclProvider->createAcl($objectIdentity);
         } catch(AclAlreadyExistsException $ex) {
@@ -91,7 +87,7 @@ abstract class AbstractAclManager implements AclManagerInterface
         $permissionContext = new PermissionContext();
         $permissionContext->setPermissionType($type);
         $permissionContext->setSecurityIdentity($securityIdentity);
-        $permissionContext->setPermissionMask($mask);
+        $permissionContext->setMask($mask);
         $permissionContext->setGranting($granting);
         
         return $permissionContext;
@@ -144,7 +140,7 @@ abstract class AbstractAclManager implements AclManagerInterface
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
             if ($this->aceMatches($aceCollection[$i], $context)) {
                 if ($this->aceMatches($aceCollection[$i], $context, array('granting'))) {
-                    $acl->{"update{$type}Ace"}($i, $context->getPermissionMask());
+                    $acl->{"update{$type}Ace"}($i, $context->getMask());
                 } else {
                     $acl->{"delete{$type}Ace"}($i);
                     $doInsert = true;
@@ -154,7 +150,7 @@ abstract class AbstractAclManager implements AclManagerInterface
         }
         
         if ($doInsert || !$aceFound) {
-            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getPermissionMask(), 
+            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 
                 0, $context->isGranting());
         }
     }
