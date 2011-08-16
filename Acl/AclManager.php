@@ -103,4 +103,19 @@ class AclManager extends AbstractAclManager
         
         return $this;
     }
+    
+    public function add($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true)
+    {
+        $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
+        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $acl = $this->doLoadAcl($oid);
+        $this->doApplyPermission($acl, $context);
+        
+        if ($installDefaults) {
+            $this->doInstallDefaults($acl);
+        }
+        
+        return $this;
+    }
+    
 }

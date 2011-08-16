@@ -8,10 +8,7 @@ $em->persist($comment);
 $em->flush(); // entity must be persisted and flushed before AclManager can act on it (needs identifier)
 
 $aclManager = $this->get('security.acl.manager');
-$permissions = $aclManager->createPermissionContext('object', $userEntity, MaskBuilder::MASK_OWNER);
-$aclManager->addPermissionContext($permissions);
-
-$aclManager->loadAcl($comment)->processPermissions()->installDefaults();
+$aclManager->add($comment, $userEntity, MaskBuilder::MASK_OWNER);
 
 ```
 
