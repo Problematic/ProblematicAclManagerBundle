@@ -1,13 +1,6 @@
 services:
-    security.acl.manager:
+    problematic.acl_manager:
         class: Problematic\AclManagerBundle\Acl\AclManager
         arguments:
             securityContext: "@security.context"
             aclProvider: "@security.acl.provider"
-            
-    security.acl.listener:
-        class: Problematic\AclManagerBundle\EventListener\AclListener
-        arguments:
-            manager: "@security.acl.manager"
-        tags:
-            - { name: kernel.listener, event: onAclManage, method: onAclManage }
