@@ -59,5 +59,3 @@ class PermissionContext implements PermissionContextInterface
     }
 
 }
-
-?>

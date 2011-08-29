@@ -132,6 +132,10 @@ abstract class AbstractAclManager implements AclManagerInterface
      */
     protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context) 
     {
+        if (null === $context->getMask()) {
+            // todo: delete the ACE
+        }
+        
         $type = $context->getPermissionType();
         $aceCollection = $this->getAceCollection($acl, $context);
         $aceFound = false;
