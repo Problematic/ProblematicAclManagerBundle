@@ -18,6 +18,9 @@ class PermissionContext implements PermissionContextInterface
         
     }
 
+    /**
+     * @param integer $mask permission mask, or null for all
+     */
     public function setMask($mask)
     {
         $this->permissionMask = $mask;

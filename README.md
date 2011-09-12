@@ -7,9 +7,11 @@ $comment = new Comment(); // create some entity
 $em->persist($comment);
 $em->flush(); // entity must be persisted and flushed before AclManager can act on it (needs identifier)
 $aclManager = $this->get('problematic.acl_manager');
-$aclManager->add($comment, $userEntity, MaskBuilder::MASK_OWNER);
+$aclManager->addPermission($comment, $userEntity, MaskBuilder::MASK_OWNER);
 
-$aclManager->delete($comment);
+$aclManager->revokePermission($comment, $userEntity, MaskBUILDER::MASK_DELETE);
+
+$aclManager->deleteAcl($comment);
 $em->remove($comment);
 $em->flush();
 

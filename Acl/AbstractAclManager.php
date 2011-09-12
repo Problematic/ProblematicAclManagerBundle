@@ -60,16 +60,6 @@ abstract class AbstractAclManager implements AclManagerInterface
     }
     
     /**
-     * Wraps MutableAclProvider#updateAcl() to check if we currently have an ACL loaded
-     * 
-     * @return void
-     */
-    protected function doUpdateAcl(MutableAclInterface $acl) 
-    {
-        $this->aclProvider->updateAcl($acl);
-    }
-    
-    /**
      * Returns an instance of PermissionContext. If !$securityIdentity instanceof SecurityIdentityInterface, a new security identity will be created using it
      * 
      * @param string $type
@@ -115,7 +105,7 @@ abstract class AbstractAclManager implements AclManagerInterface
             $securityIdentity = new RoleSecurityIdentity($identity);
         }
 
-        if (null === $securityIdentity || !($securityIdentity instanceof SecurityIdentityInterface)) {
+        if (!$securityIdentity instanceof SecurityIdentityInterface) {
             throw new InvalidIdentityException('Couldn\'t create a valid SecurityIdentity with the provided identity information');
         }
         
@@ -132,31 +122,18 @@ abstract class AbstractAclManager implements AclManagerInterface
      */
     protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context) 
     {
-        if (null === $context->getMask()) {
-            // todo: delete the ACE
-        }
-        
         $type = $context->getPermissionType();
         $aceCollection = $this->getAceCollection($acl, $context);
-        $aceFound = false;
-        $doInsert = false;
         
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
-            if ($this->aceMatches($aceCollection[$i], $context)) {
-                if ($this->aceMatches($aceCollection[$i], $context, array('granting'))) {
-                    $acl->{"update{$type}Ace"}($i, $context->getMask());
-                } else {
-                    $acl->{"delete{$type}Ace"}($i);
-                    $doInsert = true;
-                }
-                $aceFound = true;
+            if ($this->aceMatches($aceCollection[$i], $context, array('sid', 'granting', 'perms'))) {
+                // an exact match already exists; we don't need to hit the db
+                return;
             }
         }
         
-        if ($doInsert || !$aceFound) {
-            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 
-                0, $context->isGranting());
-        }
+        $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 
+            0, $context->isGranting());
     }
     
     protected function doRemovePermission(MutableAclInterface $acl, PermissionContextInterface $context)
@@ -164,10 +141,18 @@ abstract class AbstractAclManager implements AclManagerInterface
         $type = $context->getPermissionType();
         $aceCollection = $this->getAceCollection($acl, $context);
         
+        $found = false;
         for ($i=count($aceCollection)-1; $i>=0; $i--) {
-            if ($this->aceMatches($aceCollection[$i], $context, array('sid', 'perms'))) {
+            if (null === $context->getMask() || $this->aceMatches($aceCollection[$i], $context, array('sid', 'perms'))) {
                 $acl->{"delete{$type}Ace"}($i);
+                $found = true;
             }
+        }
+        
+        if (!$found && null !== $context->getMask()) {
+            // create a non-granting ACE for this permission
+            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(),
+                0, false);
         }
     }
     
@@ -187,8 +172,6 @@ abstract class AbstractAclManager implements AclManagerInterface
         foreach ($permissionContexts as $context) {
             $this->doApplyPermission($acl, $context);
         }
-        
-        $this->doUpdateAcl($acl);
     }
     
     private function aceMatches(AuditableEntryInterface $ace, PermissionContextInterface $context, array $checks = array())

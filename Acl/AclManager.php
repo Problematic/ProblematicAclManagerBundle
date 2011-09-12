@@ -19,7 +19,7 @@ class AclManager extends AbstractAclManager
         parent::__construct($securityContext, $aclProvider);
     }
     
-    public function add($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true)
+    public function addPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true)
     {
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
         $oid = ObjectIdentity::fromDomainObject($domainObject);
@@ -30,13 +30,33 @@ class AclManager extends AbstractAclManager
             $this->doInstallDefaults($acl);
         }
         
+        $this->aclProvider->updateAcl($acl);
+        
         return $this;
     }
     
-    public function delete($domainObject)
+    public function deleteAcl($domainObject)
     {
         $oid = ObjectIdentity::fromDomainObject($domainObject);
         $this->aclProvider->deleteAcl($oid);
+        
+        return $this;
+    }
+    
+    public function revokePermission($domainObject, $securityIdentity, $mask, $type = 'object')
+    {
+        $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
+        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $acl = $this->doLoadAcl($oid);
+        $this->doRemovePermission($acl, $context);
+        $this->aclProvider->updateAcl($acl);
+        
+        return $this;
+    }
+    
+    public function revokeAllPermissions($domainObject, $securityIdentity, $type = 'object')
+    {
+        $this->revokePermission($domainObject, $securityIdentity, null, $type);
         
         return $this;
     }
