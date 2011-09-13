@@ -34,7 +34,7 @@ abstract class AbstractAclManager implements AclManagerInterface
     /**
      * @return MutableAclProviderInterface
      */
-    public function getAclProvider()
+    protected function getAclProvider()
     {
         return $this->aclProvider;
     }
@@ -49,9 +49,9 @@ abstract class AbstractAclManager implements AclManagerInterface
     {
         $acl = null;
         try {
-            $acl = $this->aclProvider->createAcl($objectIdentity);
+            $acl = $this->getAclProvider()->createAcl($objectIdentity);
         } catch (AclAlreadyExistsException $ex) {
-            $acl = $this->aclProvider->findAcl($objectIdentity);
+            $acl = $this->getAclProvider()->findAcl($objectIdentity);
         }
 
         return $acl;
@@ -63,7 +63,7 @@ abstract class AbstractAclManager implements AclManagerInterface
             $token = ObjectIdentity::fromDomainObject($token);
         }
 
-        $this->aclProvider->deleteAcl($token);
+        $this->getAclProvider()->deleteAcl($token);
     }
 
     /**
