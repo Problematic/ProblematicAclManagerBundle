@@ -20,6 +20,8 @@ use Problematic\AclManagerBundle\Model\AclManagerInterface;
 
 /**
  * abstract class containing low-level functionality (plumbing) to be extended by production AclManager (porcelain)
+ * note that none of the methods in the abstract class call AclProvider#updatedAcl(); this needs to be taken care
+ * of in the concrete implementation
  */
 abstract class AbstractAclManager implements AclManagerInterface
 {
