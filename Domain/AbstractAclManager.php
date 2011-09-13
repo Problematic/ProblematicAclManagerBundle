@@ -24,12 +24,10 @@ use Problematic\AclManagerBundle\Model\AclManagerInterface;
 abstract class AbstractAclManager implements AclManagerInterface
 {
 
-    protected $securityContext;
     private $aclProvider;
 
-    public function __construct(SecurityContextInterface $securityContext, MutableAclProviderInterface $aclProvider)
+    public function __construct(MutableAclProviderInterface $aclProvider)
     {
-        $this->securityContext = $securityContext;
         $this->aclProvider = $aclProvider;
     }
     

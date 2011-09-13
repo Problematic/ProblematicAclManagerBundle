@@ -15,11 +15,6 @@ use Symfony\Component\Security\Acl\Permission\MaskBuilder;
 class AclManager extends AbstractAclManager 
 {
     
-    public function __construct(SecurityContext $securityContext, MutableAclProvider $aclProvider) 
-    {
-        parent::__construct($securityContext, $aclProvider);
-    }
-    
     public function addPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true)
     {
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
