@@ -132,7 +132,9 @@ abstract class AbstractAclManager implements AclManagerInterface
         $type = $context->getPermissionType();
         $aceCollection = $this->getAceCollection($acl, $context->getPermissionType());
 
-        for ($i = count($aceCollection) - 1; $i >= 0; $i--) {
+        $size = count($aceCollection) - 1;
+        reset($aceCollection);
+        for ($i = $size; $i >= 0; $i--) {
             if ($context->equals($aceCollection[$i])) {
                 // an exact match already exists; we don't need to hit the db
                 return;
@@ -148,7 +150,9 @@ abstract class AbstractAclManager implements AclManagerInterface
         $aceCollection = $this->getAceCollection($acl, $context->getPermissionType());
 
         $found = false;
-        for ($i = count($aceCollection) - 1; $i >= 0; $i--) {
+        $size = count($aceCollection) - 1;
+        reset($aceCollection);
+        for ($i = $size; $i >= 0; $i--) {
             if ($context->equals($aceCollection[$i])) {
                 $acl->{"delete{$type}Ace"}($i);
                 $found = true;
@@ -166,7 +170,9 @@ abstract class AbstractAclManager implements AclManagerInterface
     {
         $aceCollection = $this->getAceCollection($acl, $type);
 
-        for ($i = count($aceCollection) - 1; $i >= 0; $i--) {
+        $size = count($aceCollection) - 1;
+        reset($aceCollection);
+        for ($i = $size; $i >= 0; $i--) {
             if ($aceCollection[$i]->getSecurityIdentity() == $securityIdentity) {
                 $acl->{"delete{$type}Ace"}($i);
             }
@@ -186,6 +192,7 @@ abstract class AbstractAclManager implements AclManagerInterface
         $builder->add('CREATE');
         $permissionContexts[] = $this->doCreatePermissionContext('class', 'ROLE_USER', $builder->get());
 
+        reset($permissionContexts);
         foreach ($permissionContexts as $context) {
             $this->doApplyPermission($acl, $context);
         }
