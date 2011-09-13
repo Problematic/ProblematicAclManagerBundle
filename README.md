@@ -17,3 +17,16 @@ $em->remove($comment);
 $em->flush();
 
 ```
+
+If you'll be doing work on a lot of entities, use AclManager#preloadAcls():
+
+```php
+<?php
+
+$products = $repo->findAll();
+
+$aclManager = $this->get('problematic.acl_manager');
+$aclManager->preloadAcls($products);
+
+// ... carry on
+```
