@@ -1,6 +1,6 @@
 services:
     problematic.acl_manager:
-        class: Problematic\AclManagerBundle\Acl\AclManager
+        class: Problematic\AclManagerBundle\Domain\AclManager
         arguments:
             securityContext: "@security.context"
             aclProvider: "@security.acl.provider"
