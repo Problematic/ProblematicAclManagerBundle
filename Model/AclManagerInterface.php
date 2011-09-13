@@ -7,5 +7,7 @@ interface AclManagerInterface
 
     public function addPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true);
     
-    public function deleteAcl($domainObject);
+    public function revokePermission($domainObject, $securityIdentity, $mask, $type = 'object');
+    
+    public function deleteAclFor($domainObject);
 }

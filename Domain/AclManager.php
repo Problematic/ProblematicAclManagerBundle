@@ -1,15 +1,16 @@
 <?php
 
-namespace Problematic\AclManagerBundle\Acl;
+namespace Problematic\AclManagerBundle\Domain;
 
 use Symfony\Component\Security\Acl\Dbal\MutableAclProvider;
 use Symfony\Component\Security\Acl\Domain\Acl;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 use Symfony\Component\Security\Core\SecurityContext;
 use Problematic\AclManagerBundle\Model\AclManagerInterface;
-use Problematic\AclManagerBundle\Acl\AbstractAclManager;
+use Problematic\AclManagerBundle\Domain\AbstractAclManager;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
+use Symfony\Component\Security\Acl\Permission\MaskBuilder;
 
 class AclManager extends AbstractAclManager 
 {
@@ -35,7 +36,7 @@ class AclManager extends AbstractAclManager
         return $this;
     }
     
-    public function deleteAcl($domainObject)
+    public function deleteAclFor($domainObject)
     {
         $oid = ObjectIdentity::fromDomainObject($domainObject);
         $this->aclProvider->deleteAcl($oid);
@@ -48,7 +49,7 @@ class AclManager extends AbstractAclManager
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
         $oid = ObjectIdentity::fromDomainObject($domainObject);
         $acl = $this->doLoadAcl($oid);
-        $this->doRemovePermission($acl, $context);
+        $this->doRevokePermission($acl, $context);
         $this->aclProvider->updateAcl($acl);
         
         return $this;
@@ -56,7 +57,11 @@ class AclManager extends AbstractAclManager
     
     public function revokeAllPermissions($domainObject, $securityIdentity, $type = 'object')
     {
-        $this->revokePermission($domainObject, $securityIdentity, null, $type);
+        $securityIdentity = $this->doCreateSecurityIdentity($securityIdentity);
+        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $acl = $this->doLoadAcl($oid);
+        $this->doRevokeAllPermissions($acl, $securityIdentity, $type);
+        $this->aclProvider->updateAcl($acl);
         
         return $this;
     }

@@ -1,9 +1,10 @@
 <?php
 
-namespace Problematic\AclManagerBundle\Acl;
+namespace Problematic\AclManagerBundle\Domain;
 
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
+use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
 
 class PermissionContext implements PermissionContextInterface
 {
@@ -59,6 +60,13 @@ class PermissionContext implements PermissionContextInterface
     public function isGranting()
     {
         return $this->granting;
+    }
+    
+    public function equals(AuditableEntryInterface $ace)
+    {
+        return $ace->getSecurityIdentity() == $this->getSecurityIdentity() &&
+            $ace->isGranting() === $this->isGranting() &&
+            $ace->getMask() === $this->getMask();
     }
 
 }
