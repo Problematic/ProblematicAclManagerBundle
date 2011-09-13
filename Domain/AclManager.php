@@ -31,15 +31,7 @@ class AclManager extends AbstractAclManager
             $this->doInstallDefaults($acl);
         }
         
-        $this->aclProvider->updateAcl($acl);
-        
-        return $this;
-    }
-    
-    public function deleteAclFor($domainObject)
-    {
-        $oid = ObjectIdentity::fromDomainObject($domainObject);
-        $this->aclProvider->deleteAcl($oid);
+        $this->getAclProvider()->updateAcl($acl);
         
         return $this;
     }
@@ -50,7 +42,7 @@ class AclManager extends AbstractAclManager
         $oid = ObjectIdentity::fromDomainObject($domainObject);
         $acl = $this->doLoadAcl($oid);
         $this->doRevokePermission($acl, $context);
-        $this->aclProvider->updateAcl($acl);
+        $this->getAclProvider()->updateAcl($acl);
         
         return $this;
     }
@@ -61,7 +53,28 @@ class AclManager extends AbstractAclManager
         $oid = ObjectIdentity::fromDomainObject($domainObject);
         $acl = $this->doLoadAcl($oid);
         $this->doRevokeAllPermissions($acl, $securityIdentity, $type);
-        $this->aclProvider->updateAcl($acl);
+        $this->getAclProvider()->updateAcl($acl);
+        
+        return $this;
+    }
+    
+    public function preloadAcls($objects)
+    {
+        $oids = array();
+        foreach ($objects as $object) {
+            $oid = ObjectIdentity::fromDomainObject($object);
+            $oids[] = $oid;
+        }
+        
+        $acls = $this->getAclProvider()->findAcls($oids); // todo: do we need to do anything with these?
+        
+        return $this;
+    }
+    
+    public function deleteAclFor($domainObject)
+    {
+        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $this->getAclProvider()->deleteAcl($oid);
         
         return $this;
     }
