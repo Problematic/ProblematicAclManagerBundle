@@ -5,9 +5,8 @@ namespace Problematic\AclManagerBundle\Model;
 interface AclManagerInterface
 {
 
-    public function addPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true);
+    function permit($user);
     
-    public function revokePermission($domainObject, $securityIdentity, $mask, $type = 'object');
+    function deny($user);
     
-    public function deleteAclFor($domainObject);
 }

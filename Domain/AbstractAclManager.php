@@ -100,7 +100,10 @@ abstract class AbstractAclManager implements AclManagerInterface
      */
     protected function doCreateSecurityIdentity($identity)
     {
-
+        
+        if ($identity instanceof SecurityIdentityInterface) {
+            return $identity;
+        }
         if (!$identity instanceof UserInterface && !$identity instanceof TokenInterface && !$identity instanceof RoleInterface && !is_string($identity)) {
             throw new \InvalidArgumentException(sprintf('$identity must implement one of: UserInterface, TokenInterface, RoleInterface (%s given)', get_class($identity)));
         }

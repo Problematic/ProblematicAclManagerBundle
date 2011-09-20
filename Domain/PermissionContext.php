@@ -5,6 +5,7 @@ namespace Problematic\AclManagerBundle\Domain;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
+use Problematic\AclManagerBundle\Model\AclCommandContextInterface;
 
 class PermissionContext implements PermissionContextInterface
 {
@@ -60,6 +61,17 @@ class PermissionContext implements PermissionContextInterface
     public function isGranting()
     {
         return $this->granting;
+    }
+    
+    public static function fromCommandContext(AclCommandContextInterface $commandContext)
+    {
+        $context = new self();
+        $context->setSecurityIdentity($commandContext->getSecurityIdentity());
+        $context->setPermissionType($commandContext->getPermissionType());
+        $context->setMask($commandContext->getMask());
+        $context->setGranting($commandContext->getAccessType() == 'permit' ? true : false);
+        
+        return $context;
     }
     
     public function equals(AuditableEntryInterface $ace)

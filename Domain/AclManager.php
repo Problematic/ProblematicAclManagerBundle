@@ -11,44 +11,45 @@ use Problematic\AclManagerBundle\Domain\AbstractAclManager;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Symfony\Component\Security\Acl\Permission\MaskBuilder;
+use Problematic\AclManagerBundle\Model\AclAccessCommand;
+use Problematic\AclManagerBundle\Model\AclCommandContext;
+use Symfony\Component\Security\Acl\Model\MutableAclInterface;
 
 class AclManager extends AbstractAclManager 
 {
     
-    public function addPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true)
+    public function permit($identity)
     {
-        $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
-        $oid = ObjectIdentity::fromDomainObject($domainObject);
-        $acl = $this->doLoadAcl($oid);
+        return new AclAccessCommand('permit', $commandContext, $this);
+    }
+    
+    public function deny($identity)
+    {
+        return $this->createAccessCommand('deny', $identity);
+    }
+    
+    public function loadAcl($oid)
+    {
+        return $this->doLoadAcl($oid);
+    }
+    
+    public function addPermission(MutableAclInterface $acl, PermissionContextInterface $context)
+    {
         $this->doApplyPermission($acl, $context);
         
-        if ($installDefaults) {
-            $this->doInstallDefaults($acl);
-        }
-        
-        $this->getAclProvider()->updateAcl($acl);
-        
         return $this;
     }
     
-    public function revokePermission($domainObject, $securityIdentity, $mask, $type = 'object')
+    public function revokePermission(MutableAclInterface $acl, PermissionContextInterface $context)
     {
-        $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
-        $oid = ObjectIdentity::fromDomainObject($domainObject);
-        $acl = $this->doLoadAcl($oid);
         $this->doRevokePermission($acl, $context);
-        $this->getAclProvider()->updateAcl($acl);
         
         return $this;
     }
     
-    public function revokeAllPermissions($domainObject, $securityIdentity, $type = 'object')
+    public function revokeAllPermissions(MutableAclInterface $acl, PermissionContextInterface $context)
     {
-        $securityIdentity = $this->doCreateSecurityIdentity($securityIdentity);
-        $oid = ObjectIdentity::fromDomainObject($domainObject);
-        $acl = $this->doLoadAcl($oid);
-        $this->doRevokeAllPermissions($acl, $securityIdentity, $type);
-        $this->getAclProvider()->updateAcl($acl);
+        $this->doRevokeAllPermissions($acl, $context->getSecurityIdentity(), 'object');
         
         return $this;
     }
@@ -72,6 +73,15 @@ class AclManager extends AbstractAclManager
         $this->getAclProvider()->deleteAcl($oid);
         
         return $this;
+    }
+    
+    private function createAccessCommand($access_type, $identity)
+    {
+        $commandContext = new AclCommandContext();
+        $identity = $this->doCreateSecurityIdentity($identity);
+        $commandContext->setSecurityIdentity($identity);
+        
+        return new AclAccessCommand($access_type, $commandContext, $this);
     }
     
 }
