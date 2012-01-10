@@ -27,10 +27,12 @@ abstract class AbstractAclManager implements AclManagerInterface
 {
 
     private $aclProvider;
+    private $securityContext;
 
-    public function __construct(MutableAclProviderInterface $aclProvider)
+    public function __construct(MutableAclProviderInterface $aclProvider, SecurityContextInterface $securityContext)
     {
         $this->aclProvider = $aclProvider;
+        $this->securityContext = $securityContext;
     }
     
     /**
@@ -39,6 +41,14 @@ abstract class AbstractAclManager implements AclManagerInterface
     protected function getAclProvider()
     {
         return $this->aclProvider;
+    }
+
+    /**
+     * @return SecurityContextInterface
+     */
+    protected function getSecurityContext()
+    {
+        return $this->securityContext;
     }
 
     /**

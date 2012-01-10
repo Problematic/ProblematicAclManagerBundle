@@ -3,3 +3,4 @@ services:
         class: Problematic\AclManagerBundle\Domain\AclManager
         arguments:
             aclProvider: "@security.acl.provider"
+            securityContext: "@security.context"

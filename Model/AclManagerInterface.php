@@ -10,4 +10,9 @@ interface AclManagerInterface
     public function revokePermission($domainObject, $securityIdentity, $mask, $type = 'object');
     
     public function deleteAclFor($domainObject);
+
+    public function isGranted($attributes, $object = null);
+
+    public function getUser();
+
 }

@@ -73,5 +73,23 @@ class AclManager extends AbstractAclManager
         
         return $this;
     }
+
+    public function isGranted($attributes, $object = null)
+    {
+        return $this->getSecurityContext()->isGranted($attributes, $object);
+    }
+
+    public function getUser()
+    {
+        $token = $this->getSecurityContext()->getToken();
+
+        if (null === $token) {
+            return null;
+        }
+
+        $user = $token->getUser();
+
+        $return (is_object($user)) ? $user : 'IS_AUTHENTICATED_ANONYMOUSLY';
+    }
     
 }
