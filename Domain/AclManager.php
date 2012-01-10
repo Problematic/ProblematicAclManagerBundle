@@ -89,7 +89,7 @@ class AclManager extends AbstractAclManager
 
         $user = $token->getUser();
 
-        $return (is_object($user)) ? $user : 'IS_AUTHENTICATED_ANONYMOUSLY';
+        return (is_object($user)) ? $user : 'IS_AUTHENTICATED_ANONYMOUSLY';
     }
     
 }
