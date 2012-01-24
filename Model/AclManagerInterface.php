@@ -5,11 +5,11 @@ namespace Problematic\AclManagerBundle\Model;
 interface AclManagerInterface
 {
 
-    public function addPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true);
+    public function addPermission($domainObject, $mask, $securityIdentity = null, $type = 'object');
     
-    public function setPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true);
+    public function setPermission($domainObject, $mask, $securityIdentity = null, $type = 'object');
     
-    public function revokePermission($domainObject, $securityIdentity, $mask, $type = 'object');
+    public function revokePermission($domainObject, $mask, $securityIdentity = null, $type = 'object');
     
     public function deleteAclFor($domainObject);
 
