@@ -31,6 +31,22 @@ class AclManager extends AbstractAclManager
         return $this;
     }
     
+    public function setPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true)
+    {
+        $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
+        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $acl = $this->doLoadAcl($oid);
+        $this->doApplyPermission($acl, $context, true);
+        
+        if ($installDefaults) {
+            $this->doInstallDefaults($acl);
+        }
+        
+        $this->getAclProvider()->updateAcl($acl);
+        
+        return $this;
+    }
+    
     public function revokePermission($domainObject, $securityIdentity, $mask, $type = 'object')
     {
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);

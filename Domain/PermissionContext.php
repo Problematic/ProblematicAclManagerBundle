@@ -68,5 +68,10 @@ class PermissionContext implements PermissionContextInterface
             $ace->isGranting() === $this->isGranting() &&
             $ace->getMask() === $this->getMask();
     }
+    
+    public function hasDifferentPermission(AuditableEntryInterface $ace){
+        return $ace->getSecurityIdentity() == $this->getSecurityIdentity() &&
+            $ace->isGranting() === $this->isGranting() && $ace->getMask() !== $this->getMask();
+    }
 
 }
