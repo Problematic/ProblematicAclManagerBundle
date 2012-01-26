@@ -139,23 +139,34 @@ abstract class AbstractAclManager implements AclManagerInterface
      * @param PermissionContextInterface $context
      * @return void
      */
-    protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context)
+    protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context, $replace_existing = false)
     {
-        $type = $context->getPermissionType();
+        $updated = false;
+        
         $aceCollection = $this->getAceCollection($acl, $context->getPermissionType());
-
         $size = count($aceCollection) - 1;
         reset($aceCollection);
         for ($i = $size; $i >= 0; $i--) {
-            if ($context->equals($aceCollection[$i])) {
-                // an exact match already exists; we don't need to hit the db
-                return;
+            if($replace_existing){
+                // Replace all existing permissions with the new one
+                if ($context->hasDifferentPermission($aceCollection[$i])) {
+                    // The ACE was found but with a different permission. Update it.
+                    $acl->{"update{$type}Ace"}($i, $context->getMask());
+                    $updated = true;
+                }
+            } else {
+                if($context->equals($aceCollection[$i])){
+                    // The exact same ACE was found. Nothing to do.
+                    return;
+                }
             }
         }
-
-        $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 0, $context->isGranting());
+        if(!$updated){
+            $type = $context->getPermissionType();
+            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 0, $context->isGranting());
+        }
     }
-
+    
     protected function doRevokePermission(MutableAclInterface $acl, PermissionContextInterface $context)
     {
         $type = $context->getPermissionType();
@@ -165,6 +176,8 @@ abstract class AbstractAclManager implements AclManagerInterface
         $size = count($aceCollection) - 1;
         reset($aceCollection);
         for ($i = $size; $i >= 0; $i--) {
+            //@todo: probably not working if multiple ACEs or different bit mask
+            // but that include these permissions.
             if ($context->equals($aceCollection[$i])) {
                 $acl->{"delete{$type}Ace"}($i);
                 $found = true;
@@ -188,25 +201,6 @@ abstract class AbstractAclManager implements AclManagerInterface
             if ($aceCollection[$i]->getSecurityIdentity() == $securityIdentity) {
                 $acl->{"delete{$type}Ace"}($i);
             }
-        }
-    }
-
-    protected function doInstallDefaults(MutableAclInterface $acl)
-    {
-        $builder = new MaskBuilder();
-        $permissionContexts = array();
-
-        $permissionContexts[] = $this->doCreatePermissionContext('class', 'ROLE_SUPER_ADMIN', MaskBuilder::MASK_IDDQD);
-        $permissionContexts[] = $this->doCreatePermissionContext('class', 'ROLE_ADMIN', MaskBuilder::MASK_MASTER);
-        $permissionContexts[] = $this->doCreatePermissionContext('class', 'IS_AUTHENTICATED_ANONYMOUSLY', MaskBuilder::MASK_VIEW);
-
-        $builder->add('VIEW');
-        $builder->add('CREATE');
-        $permissionContexts[] = $this->doCreatePermissionContext('class', 'ROLE_USER', $builder->get());
-
-        reset($permissionContexts);
-        foreach ($permissionContexts as $context) {
-            $this->doApplyPermission($acl, $context);
         }
     }
 

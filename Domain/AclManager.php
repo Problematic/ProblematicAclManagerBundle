@@ -14,25 +14,78 @@ use Symfony\Component\Security\Acl\Permission\MaskBuilder;
 
 class AclManager extends AbstractAclManager 
 {
-    
-    public function addPermission($domainObject, $securityIdentity, $mask, $type = 'object', $installDefaults = true)
+    /**
+     * {@inheritDoc}
+     */
+    public function addObjectPermission($domainObject, $mask, $securityIdentity = null)
     {
+        $this->addPermission($domainObject, $mask, $securityIdentity, 'object', false);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function addClassPermission($domainObject, $mask, $securityIdentity = null)
+    {
+        $this->addPermission($domainObject, $mask, $securityIdentity, 'class', false);
+    }
+    
+    /**
+     * @param mixed $domainObject
+     * @param int   $mask
+     * @param UserInterface | TokenInterface | RoleInterface $securityIdentity
+     * @param string $type
+     * @param boolean $replace_existing
+     * @return \Problematic\AclManagerBundle\Domain\AbstractAclManager 
+     */
+    protected function addPermission($domainObject, $mask, $securityIdentity = null, $type = 'object', $replace_existing = false)
+    {
+        if(is_null($securityIdentity)){
+            $securityIdentity = $this->getUser();
+        }
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
         $oid = ObjectIdentity::fromDomainObject($domainObject);
         $acl = $this->doLoadAcl($oid);
-        $this->doApplyPermission($acl, $context);
-        
-        if ($installDefaults) {
-            $this->doInstallDefaults($acl);
-        }
+        $this->doApplyPermission($acl, $context, $replace_existing);
         
         $this->getAclProvider()->updateAcl($acl);
         
         return $this;
     }
-    
-    public function revokePermission($domainObject, $securityIdentity, $mask, $type = 'object')
+
+    /**
+     * @param mixed $domainObject
+     * @param int   $mask
+     * @param UserInterface | TokenInterface | RoleInterface $securityIdentity
+     * @param string $type
+     * @param boolean $replace_existing
+     * @return \Problematic\AclManagerBundle\Domain\AbstractAclManager 
+     */
+    protected function setPermission($domainObject, $mask, $securityIdentity = null, $type = 'object')
     {
+        $this->addPermission($domainObject, $mask, $securityIdentity, $type, true);
+        
+        return $this;
+    }
+    /**
+     * {@inheritDoc}
+     */
+    public function setObjectPermission($domainObject, $mask, $securityIdentity = null){
+        $this->setPermission($domainObject, $mask, $securityIdentity, 'object');
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function setClassPermission($domainObject, $mask, $securityIdentity = null){
+        $this->setPermission($domainObject, $mask, $securityIdentity, 'class');
+    }
+    
+    public function revokePermission($domainObject, $mask, $securityIdentity = null, $type = 'object')
+    {
+        if(is_null($securityIdentity)){
+            $securityIdentity = $this->getUser();
+        }
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
         $oid = ObjectIdentity::fromDomainObject($domainObject);
         $acl = $this->doLoadAcl($oid);
@@ -42,8 +95,27 @@ class AclManager extends AbstractAclManager
         return $this;
     }
     
-    public function revokeAllPermissions($domainObject, $securityIdentity, $type = 'object')
+    /**
+     * {@inheritDoc}
+     */
+    public function revokeAllClassPermissions($domainObject, $securityIdentity = null)
     {
+        $this->revokeAllPermissions($domainObject, $securityIdentity, 'class');
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function revokeAllObjectPermissions($domainObject, $securityIdentity = null)
+    {
+        $this->revokeAllPermissions($domainObject, $securityIdentity, 'object');
+    }
+    
+    protected function revokeAllPermissions($domainObject, $securityIdentity = null, $type = 'object')
+    {
+        if(is_null($securityIdentity)){
+            $securityIdentity = $this->getUser();
+        }
         $securityIdentity = $this->doCreateSecurityIdentity($securityIdentity);
         $oid = ObjectIdentity::fromDomainObject($domainObject);
         $acl = $this->doLoadAcl($oid);
@@ -79,6 +151,9 @@ class AclManager extends AbstractAclManager
         return $this->getSecurityContext()->isGranted($attributes, $object);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getUser()
     {
         $token = $this->getSecurityContext()->getToken();
