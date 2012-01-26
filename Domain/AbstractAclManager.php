@@ -141,20 +141,30 @@ abstract class AbstractAclManager implements AclManagerInterface
      */
     protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context, $replace_existing = false)
     {
-        $type = $context->getPermissionType();
+        $updated = false;
+        
         $aceCollection = $this->getAceCollection($acl, $context->getPermissionType());
-
         $size = count($aceCollection) - 1;
         reset($aceCollection);
         for ($i = $size; $i >= 0; $i--) {
-            if ($context->hasDifferentPermission($aceCollection[$i]) && $replace_existing) {
-                // The ACE was found but with a different permission. Update it.
-                $acl->{"update{$type}Ace"}($i, $context->getMask());
-                return;
+            if($replace_existing){
+                // Replace all existing permissions with the new one
+                if ($context->hasDifferentPermission($aceCollection[$i])) {
+                    // The ACE was found but with a different permission. Update it.
+                    $acl->{"update{$type}Ace"}($i, $context->getMask());
+                    $updated = true;
+                }
+            } else {
+                if($context->equals($aceCollection[$i])){
+                    // The exact same ACE was found. Nothing to do.
+                    return;
+                }
             }
         }
-
-        $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 0, $context->isGranting());
+        if(!$updated){
+            $type = $context->getPermissionType();
+            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 0, $context->isGranting());
+        }
     }
     
     protected function doRevokePermission(MutableAclInterface $acl, PermissionContextInterface $context)
@@ -166,6 +176,8 @@ abstract class AbstractAclManager implements AclManagerInterface
         $size = count($aceCollection) - 1;
         reset($aceCollection);
         for ($i = $size; $i >= 0; $i--) {
+            //@todo: probably not working if multiple ACEs or different bit mask
+            // but that include these permissions.
             if ($context->equals($aceCollection[$i])) {
                 $acl->{"delete{$type}Ace"}($i);
                 $found = true;
