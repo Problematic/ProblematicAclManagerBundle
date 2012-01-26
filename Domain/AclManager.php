@@ -98,7 +98,7 @@ class AclManager extends AbstractAclManager
     /**
      * {@inheritDoc}
      */
-    public function revokeAllClassPermissions($domainObject, $securityIdentity)
+    public function revokeAllClassPermissions($domainObject, $securityIdentity = null)
     {
         $this->revokeAllPermissions($domainObject, $securityIdentity, 'class');
     }
@@ -106,7 +106,7 @@ class AclManager extends AbstractAclManager
     /**
      * {@inheritDoc}
      */
-    public function revokeAllObjectPermissions($domainObject, $securityIdentity)
+    public function revokeAllObjectPermissions($domainObject, $securityIdentity = null)
     {
         $this->revokeAllPermissions($domainObject, $securityIdentity, 'object');
     }
