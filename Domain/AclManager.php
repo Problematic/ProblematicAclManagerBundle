@@ -44,7 +44,7 @@ class AclManager extends AbstractAclManager
             $securityIdentity = $this->getUser();
         }
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
-        $oid = ($type == 'object') ? ObjectIdentity::fromDomainObject($domainObject) : new ObjectIdentity('class', $domainObject);
+        $oid = ObjectIdentity::fromDomainObject($domainObject);
         $acl = $this->doLoadAcl($oid);
         $this->doApplyPermission($acl, $context, $replace_existing);
         
