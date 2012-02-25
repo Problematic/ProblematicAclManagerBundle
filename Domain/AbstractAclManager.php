@@ -141,7 +141,8 @@ abstract class AbstractAclManager implements AclManagerInterface
      */
     protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context, $replace_existing = false)
     {
-        $updated = false;
+        $insertAce = true;
+        $type = $context->getPermissionType();
         
         $aceCollection = $this->getAceCollection($acl, $context->getPermissionType());
         $size = count($aceCollection) - 1;
@@ -152,8 +153,8 @@ abstract class AbstractAclManager implements AclManagerInterface
                 if ($context->hasDifferentPermission($aceCollection[$i])) {
                     // The ACE was found but with a different permission. Update it.
                     $acl->{"update{$type}Ace"}($i, $context->getMask());
-                    $updated = true;
                 }
+                 $insertAce = false;
             } else {
                 if($context->equals($aceCollection[$i])){
                     // The exact same ACE was found. Nothing to do.
@@ -161,8 +162,7 @@ abstract class AbstractAclManager implements AclManagerInterface
                 }
             }
         }
-        if(!$updated){
-            $type = $context->getPermissionType();
+        if($insertAce){
             $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 0, $context->isGranting());
         }
     }
