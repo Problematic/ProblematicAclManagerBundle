@@ -141,30 +141,35 @@ abstract class AbstractAclManager implements AclManagerInterface
      */
     protected function doApplyPermission(MutableAclInterface $acl, PermissionContextInterface $context, $replace_existing = false)
     {
-        $insertAce = true;
         $type = $context->getPermissionType();
-        
-        $aceCollection = $this->getAceCollection($acl, $context->getPermissionType());
+        $aceCollection = $this->getAceCollection($acl,
+                $context->getPermissionType());
         $size = count($aceCollection) - 1;
         reset($aceCollection);
         for ($i = $size; $i >= 0; $i--) {
-            if($replace_existing){
+            if ($replace_existing) {
                 // Replace all existing permissions with the new one
                 if ($context->hasDifferentPermission($aceCollection[$i])) {
                     // The ACE was found but with a different permission. Update it.
                     $acl->{"update{$type}Ace"}($i, $context->getMask());
+                    //No need to proceed further because the acl is updated
+                    return;
+                } else {
+                    if ($context->equals($aceCollection[$i])) {
+                        // The exact same ACE was found. Nothing to do.
+                        return;
+                    }
                 }
-                 $insertAce = false;
             } else {
-                if($context->equals($aceCollection[$i])){
+                if ($context->equals($aceCollection[$i])) {
                     // The exact same ACE was found. Nothing to do.
                     return;
                 }
             }
         }
-        if($insertAce){
-            $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(), $context->getMask(), 0, $context->isGranting());
-        }
+        //If we come this far means we have to insert ace
+        $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(),
+                $context->getMask(), 0, $context->isGranting());
     }
     
     protected function doRevokePermission(MutableAclInterface $acl, PermissionContextInterface $context)
