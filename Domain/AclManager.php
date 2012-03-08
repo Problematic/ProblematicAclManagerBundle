@@ -135,7 +135,7 @@ class AclManager extends AbstractAclManager
         
         $acls = $this->getAclProvider()->findAcls($oids); // todo: do we need to do anything with these?
         
-        return $this;
+        return $acls;
     }
     
     public function deleteAclFor($domainObject)
