@@ -1,0 +1,28 @@
+{
+    "name": "problematic/acl-manager-bundle",
+    "type": "symfony-bundle",
+    "description": "ACL Manager for Symfony2",
+    "keywords": ["ACL management"],
+    "homepage": "https://github.com/Problematic/ProblematicAclManagerBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Derek Stobbe",
+            "email": "djstobbe@gmail.com"
+        },
+    ],
+    "require": {
+        "php": ">=5.3.2",
+        "symfony/framework-bundle": "2.*",
+        "symfony/security-bundle": "2.*"
+    },
+    "suggest": {
+        "symfony/doctrine-bundle": "*",
+        "symfony/mongodb-odm-bundle": "*",
+        "doctrine/couchdb-odm-bundle": "*"
+    },
+    "autoload": {
+        "psr-0": { "Problematic\\AclManagerBundle": "" }
+    },
+    "target-dir": "Problematic/AclManagerBundle"
+}
