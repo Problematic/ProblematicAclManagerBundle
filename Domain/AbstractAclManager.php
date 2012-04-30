@@ -15,6 +15,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategyInterface;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Problematic\AclManagerBundle\Model\AclManagerInterface;
 
@@ -28,11 +29,13 @@ abstract class AbstractAclManager implements AclManagerInterface
 
     private $aclProvider;
     private $securityContext;
+    private $objectIdentityRetrievalStrategy;
 
-    public function __construct(MutableAclProviderInterface $aclProvider, SecurityContextInterface $securityContext)
+    public function __construct(MutableAclProviderInterface $aclProvider, SecurityContextInterface $securityContext, ObjectIdentityRetrievalStrategyInterface $objectIdentityRetrievalStrategy)
     {
         $this->aclProvider = $aclProvider;
         $this->securityContext = $securityContext;
+        $this->objectIdentityRetrievalStrategy = $objectIdentityRetrievalStrategy;
     }
     
     /**
@@ -51,6 +54,14 @@ abstract class AbstractAclManager implements AclManagerInterface
         return $this->securityContext;
     }
 
+    /**
+     * @return ObjectIdentityRetrievalStrategyInterface
+     */
+    protected function getObjectIdentityRetrievalStrategy()
+    {
+    	return $this->objectIdentityRetrievalStrategy;
+    }
+    
     /**
      * Loads an ACL from the ACL provider, first by attempting to create, then finding if it already exists
      * 
