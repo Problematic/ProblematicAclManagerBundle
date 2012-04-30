@@ -44,7 +44,7 @@ class AclManager extends AbstractAclManager
             $securityIdentity = $this->getUser();
         }
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
-        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $oid = $this->getObjectIdentityRetrievalStrategy()->getObjectIdentity($domainObject);
         $acl = $this->doLoadAcl($oid);
         $this->doApplyPermission($acl, $context, $replace_existing);
         
@@ -87,7 +87,7 @@ class AclManager extends AbstractAclManager
             $securityIdentity = $this->getUser();
         }
         $context = $this->doCreatePermissionContext($type, $securityIdentity, $mask);
-        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $oid = $this->getObjectIdentityRetrievalStrategy()->getObjectIdentity($domainObject);
         $acl = $this->doLoadAcl($oid);
         $this->doRevokePermission($acl, $context);
         $this->getAclProvider()->updateAcl($acl);
@@ -117,7 +117,7 @@ class AclManager extends AbstractAclManager
             $securityIdentity = $this->getUser();
         }
         $securityIdentity = $this->doCreateSecurityIdentity($securityIdentity);
-        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $oid = $this->getObjectIdentityRetrievalStrategy()->getObjectIdentity($domainObject);
         $acl = $this->doLoadAcl($oid);
         $this->doRevokeAllPermissions($acl, $securityIdentity, $type);
         $this->getAclProvider()->updateAcl($acl);
@@ -129,7 +129,7 @@ class AclManager extends AbstractAclManager
     {
         $oids = array();
         foreach ($objects as $object) {
-            $oid = ObjectIdentity::fromDomainObject($object);
+            $oid = $this->getObjectIdentityRetrievalStrategy()->getObjectIdentity($object);
             $oids[] = $oid;
         }
         
@@ -140,7 +140,7 @@ class AclManager extends AbstractAclManager
     
     public function deleteAclFor($domainObject)
     {
-        $oid = ObjectIdentity::fromDomainObject($domainObject);
+        $oid = $this->getObjectIdentityRetrievalStrategy()->getObjectIdentity($domainObject);
         $this->getAclProvider()->deleteAcl($oid);
         
         return $this;
