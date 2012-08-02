@@ -1,3 +1,45 @@
+## Installation ##
+
+Add this bundle to your `composer.json` file:
+
+```json
+{
+    "require": {
+        "problematic/acl-manager-bundle": "dev-master"
+    }
+}
+```
+
+Register the bundle in `app/AppKernel.php`:
+
+```php
+<?php
+
+// app/AppKernel.php
+public function registerBundles()
+{
+    return array(
+        // ...
+        new Problematic\AclManagerBundle\ProblematicAclManagerBundle(),
+    );
+}
+```
+
+If you haven't configured the ACL enable it in `app/config/security.yml`:
+
+```yaml
+# app/config/security.yml
+security:
+    acl:
+        connection: default
+```
+            
+Finally run the ACL init command
+
+    php app/console init:acl
+
+## Usage ##
+
 ```php
 <?php
 
