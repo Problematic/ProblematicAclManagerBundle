@@ -56,7 +56,7 @@ $aclManager->addObjectPermission($comment, MaskBuilder::MASK_OWNER, $userEntity)
 $aclManager->addObjectPermission($comment, MaskBuilder::MASK_OWNER);
 // Replaces all current permissions with this new one
 $aclManager->setObjectPermission($comment, MaskBuilder::MASK_OWNER, $userEntity);
-$aclManager->revokeObjectPermission($comment, MaskBUILDER::MASK_DELETE, $userEntity);
+$aclManager->revokePermission($comment, MaskBUILDER::MASK_DELETE, $userEntity);
 $aclManager->revokeAllObjectPermissions($comment, $userEntity);
 
 // Same with class permissions:
