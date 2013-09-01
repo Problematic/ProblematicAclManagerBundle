@@ -120,7 +120,7 @@ interface AclManagerInterface
 
     public function isGranted($attributes, $object = null);
 
-    public function isFieldGranted($attributes, $object = null);
+    public function isFieldGranted($attributes, $object, $field);
 
     /**
      * Retrieves the current session user
