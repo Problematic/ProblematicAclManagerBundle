@@ -12,6 +12,7 @@ class PermissionContext implements PermissionContextInterface
     protected $permissionMask;
     protected $securityIdentity;
     protected $permissionType;
+    protected $field;
     protected $granting;
 
     public function __construct()
@@ -62,6 +63,15 @@ class PermissionContext implements PermissionContextInterface
         return $this->granting;
     }
 
+    public function setField($field)
+    {
+        $this->field = $field;
+    }
+
+    public function getField()
+    {
+        return $this->field;
+    }
     public function equals(AuditableEntryInterface $ace)
     {
         return $ace->getSecurityIdentity() == $this->getSecurityIdentity() &&
