@@ -33,7 +33,7 @@ security:
     acl:
         connection: default
 ```
-            
+
 Finally run the ACL init command
 
     php app/console init:acl

@@ -37,7 +37,7 @@ abstract class AbstractAclManager implements AclManagerInterface
         $this->securityContext = $securityContext;
         $this->objectIdentityRetrievalStrategy = $objectIdentityRetrievalStrategy;
     }
-    
+
     /**
      * @return MutableAclProviderInterface
      */
@@ -59,12 +59,12 @@ abstract class AbstractAclManager implements AclManagerInterface
      */
     protected function getObjectIdentityRetrievalStrategy()
     {
-    	return $this->objectIdentityRetrievalStrategy;
+	    return $this->objectIdentityRetrievalStrategy;
     }
-    
+
     /**
      * Loads an ACL from the ACL provider, first by attempting to create, then finding if it already exists
-     * 
+     *
      * @param mixed $entity
      * @return MutableAclInterface
      */
@@ -91,12 +91,12 @@ abstract class AbstractAclManager implements AclManagerInterface
 
     /**
      * Returns an instance of PermissionContext. If !$securityIdentity instanceof SecurityIdentityInterface, a new security identity will be created using it
-     * 
+     *
      * @param string $type
      * @param $securityIdentity
      * @param integer $mask
      * @param boolean $granting
-     * @return PermissionContext 
+     * @return PermissionContext
      */
     protected function doCreatePermissionContext($type, $securityIdentity, $mask, $granting = true)
     {
@@ -117,7 +117,7 @@ abstract class AbstractAclManager implements AclManagerInterface
      * Creates a new object instanceof SecurityIdentityInterface from input implementing one of UserInterface, TokenInterface or RoleInterface (or its string representation)
      * @param mixed $identity
      * @throws InvalidIdentityException
-     * @return SecurityIdentityInterface 
+     * @return SecurityIdentityInterface
      */
     protected function doCreateSecurityIdentity($identity)
     {
@@ -144,7 +144,7 @@ abstract class AbstractAclManager implements AclManagerInterface
 
     /**
      * Loads an ACE collection from the ACL and updates the permissions (creating if no appropriate ACE exists)
-     * 
+     *
      * @todo refactor this code to transactionalize ACL updating
      * @param MutableAclInterface $acl
      * @param PermissionContextInterface $context
@@ -182,7 +182,7 @@ abstract class AbstractAclManager implements AclManagerInterface
         $acl->{"insert{$type}Ace"}($context->getSecurityIdentity(),
                 $context->getMask(), 0, $context->isGranting());
     }
-    
+
     protected function doRevokePermission(MutableAclInterface $acl, PermissionContextInterface $context)
     {
         $type = $context->getPermissionType();

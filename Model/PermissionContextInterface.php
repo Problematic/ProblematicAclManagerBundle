@@ -16,6 +16,6 @@ interface PermissionContextInterface
     public function isGranting();
 
     public function equals(AuditableEntryInterface $ace);
-    
+
     public function hasDifferentPermission(AuditableEntryInterface $ace);
 }
