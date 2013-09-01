@@ -11,6 +11,7 @@ use Problematic\AclManagerBundle\Domain\AbstractAclManager;
 use Problematic\AclManagerBundle\Model\PermissionContextInterface;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Symfony\Component\Security\Acl\Permission\MaskBuilder;
+use Symfony\Component\Security\Acl\Exception\NoAceFoundException;
 
 class AclManager extends AbstractAclManager
 {
