@@ -129,7 +129,7 @@ class AclManager extends AbstractAclManager
         return $this;
     }
 
-    public function revokeFieldPermission($dmainObject, $field, $mask, $securityIdentity = null, $type = 'object')
+    public function revokeFieldPermission($domainObject, $field, $mask, $securityIdentity = null, $type = 'object')
     {
         if(is_null($securityIdentity)){
             $securityIdentity = $this->getUser();
