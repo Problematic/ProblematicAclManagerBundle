@@ -217,9 +217,14 @@ class AclManager extends AbstractAclManager
     {
         $oid = $this->getObjectIdentityRetrievalStrategy()->getObjectIdentity($object);
         $acl = $this->doLoadAcl($oid);
-        return $acl->isFieldGranted($field, $masks, array(
-            $this->doCreateSecurityIdentity( $this->getUser() )
-        ));
+
+        try {
+            return $acl->isFieldGranted($field, $masks, array(
+                $this->doCreateSecurityIdentity( $this->getUser() )
+            ));
+        } catch (NoAceFoundExcpetion $ex) {
+            return false;
+        }
     }
 
     /**
