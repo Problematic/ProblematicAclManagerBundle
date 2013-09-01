@@ -42,7 +42,7 @@ interface AclManagerInterface
      * @param int $mask
      * @param UserInterface | ToekInterface | RoleInterface $securityIdentity if none fiven, the current session user will be used
      */
-    public function addClassFieldPermission($domainObject, $field, $mask, $securityIdentity = null)
+    public function addClassFieldPermission($domainObject, $field, $mask, $securityIdentity = null);
 
     /**
      * Sets permission mask for a given domain object. All previous permissions for this
