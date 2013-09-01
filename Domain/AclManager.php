@@ -223,7 +223,7 @@ class AclManager extends AbstractAclManager
             return $acl->isFieldGranted($field, $masks, array(
                 $this->doCreateSecurityIdentity( $this->getUser() )
             ));
-        } catch (NoAceFoundExcpetion $ex) {
+        } catch (NoAceFoundException $ex) {
             return false;
         }
     }
