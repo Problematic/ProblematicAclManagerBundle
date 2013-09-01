@@ -215,7 +215,7 @@ class AclManager extends AbstractAclManager
 
     public function isFieldGranted($masks, $object, $field)
     {
-        $oid = $this->getObjectIdentityRetrievalStrategy()->getObjectIdentity($domainObject);
+        $oid = $this->getObjectIdentityRetrievalStrategy()->getObjectIdentity($object);
         $acl = $this->doLoadAcl($oid);
         return $acl->isFieldGranted($field, $masks, array(
             $this->doCreateSecurityIdentity( $this->getUser() )
