@@ -82,7 +82,7 @@ interface AclManagerInterface
      * @param int $mask
      * @param UserInterface | ToekInterface | RoleInterface $securityIdentity if none fiven, the current session user will be used
      */
-    public function setClassFieldPermission($domainObject, $field, $mask, $securityIdentity = null)
+    public function setClassFieldPermission($domainObject, $field, $mask, $securityIdentity = null);
 
 
 
