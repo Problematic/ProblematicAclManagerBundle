@@ -13,9 +13,11 @@ interface PermissionContextInterface
 
     public function getPermissionType();
 
+    public function getField();
+
     public function isGranting();
 
     public function equals(AuditableEntryInterface $ace);
-    
+
     public function hasDifferentPermission(AuditableEntryInterface $ace);
 }
