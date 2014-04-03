@@ -188,7 +188,7 @@ class AclManager extends AbstractAclManager
         return $this;
     }
 
-    public function preloadAcls($objects)
+    public function preloadAcls($objects, $identities = array())
     {
         $oids = array();
         foreach ($objects as $object) {
@@ -196,7 +196,13 @@ class AclManager extends AbstractAclManager
             $oids[] = $oid;
         }
 
-        $acls = $this->getAclProvider()->findAcls($oids); // todo: do we need to do anything with these?
+        $sids = array();
+        foreach ($identities as $identity) {
+            $sid = $this->doCreateSecurityIdentity($identity);
+            $sids[] = $sid;
+        }
+
+        $acls = $this->getAclProvider()->findAcls($oids, $sids); // todo: do we need to do anything with these?
 
         return $acls;
     }
