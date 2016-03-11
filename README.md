@@ -56,24 +56,24 @@ $aclManager->addObjectPermission($comment, MaskBuilder::MASK_OWNER, $userEntity)
 $aclManager->addObjectPermission($comment, MaskBuilder::MASK_OWNER);
 // Replaces all current permissions with this new one
 $aclManager->setObjectPermission($comment, MaskBuilder::MASK_OWNER, $userEntity);
-$aclManager->revokePermission($comment, MaskBUILDER::MASK_DELETE, $userEntity);
+$aclManager->revokePermission($comment, MaskBuilder::MASK_DELETE, $userEntity);
 $aclManager->revokeAllObjectPermissions($comment, $userEntity);
 
 // Same with class permissions:
 $aclManager->addClassPermission($comment, MaskBuilder::MASK_OWNER, $userEntity);
 $aclManager->setClassPermission($comment, MaskBuilder::MASK_OWNER, $userEntity);
-$aclManager->revokePermission($comment, MaskBUILDER::MASK_DELETE, $userEntity, 'class');
+$aclManager->revokePermission($comment, MaskBuilder::MASK_DELETE, $userEntity, 'class');
 $aclManager->revokeAllClassPermissions($comment, $userEntity);
 
 // You can alse use object-field...
 $aclManager->addObjectFieldPermission($comment, 'title', MaskBuilder:MASK_EDIT, $userEntity);
 $aclManager->setObjectFieldPermission($comment, 'title', MaskBuilder:MASK_EDIT, $userEntity);
-$aclManager->revokeFieldPermission($comment,, 'title' MaskBUILDER::MASK_DELETE, $userEntity);
+$aclManager->revokeFieldPermission($comment,, 'title' MaskBuilder::MASK_DELETE, $userEntity);
 $aclManager->revokeAllObjectFieldPermissions($comment, 'title', $userEntity);
 // ...and class-field scope permissions :
 $aclManager->addClassFieldPermission($comment, 'title', MaskBuilder:MASK_EDIT, $userEntity);
 $aclManager->setClassFieldPermission($comment, 'title', MaskBuilder:MASK_EDIT, $userEntity);
-$aclManager->revokeFieldPermission($comment,, 'title' MaskBUILDER::MASK_DELETE, $userEntity, 'class');
+$aclManager->revokeFieldPermission($comment,, 'title' MaskBuilder::MASK_DELETE, $userEntity, 'class');
 $aclManager->revokeAllClassFieldPermissions($comment, 'title', $userEntity);
 
 $aclManager->deleteAclFor($comment);
