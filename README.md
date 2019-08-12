@@ -65,7 +65,7 @@ $aclManager->setClassPermission($comment, MaskBuilder::MASK_OWNER, $userEntity);
 $aclManager->revokePermission($comment, MaskBuilder::MASK_DELETE, $userEntity, 'class');
 $aclManager->revokeAllClassPermissions($comment, $userEntity);
 
-// You can alse use object-field...
+// You can also use object-field...
 $aclManager->addObjectFieldPermission($comment, 'title', MaskBuilder:MASK_EDIT, $userEntity);
 $aclManager->setObjectFieldPermission($comment, 'title', MaskBuilder:MASK_EDIT, $userEntity);
 $aclManager->revokeFieldPermission($comment,, 'title' MaskBuilder::MASK_DELETE, $userEntity);
